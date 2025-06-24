@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Курс ВГТУ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: #fafbfc;
+      color: #212c3a;
+    }
+    header {
+      background: #222d3a;
+      padding: 12px 0;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      margin-left: 30px;
+    }
+    .logo {
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            border-radius: 50%;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-right: 50px;
+    }
+    .icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin: 0 7px;
+      font-size: 20px;
+      color: #fff;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #e0e3e7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    main {
+      padding: 36px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .profile-block {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 35px;
+      gap: 32px;
+    }
+    .profile-image-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .avatar-edit-label {
+      cursor: pointer;
+      font-size: 12px;
+      color: #1e51a4;
+      margin-top: 4px;
+      text-decoration: underline;
+    }
+    .profile-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      background: #e0e3e7;
+      object-fit: cover;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .course-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .input-editable {
+      outline: none;
+      border: none;
+      border-bottom: 1px solid #ccc;
+      font-size: 20px;
+      width: 80%;
+      font-family: inherit;
+      transition: border 0.2s;
+      background: transparent;
+    }
+    .input-editable:focus {
+      border-bottom: 2px solid #1e51a4;
+    }
+    .sections {
+      margin-bottom: 27px;
+    }
+    .section-block {
+      background: #fff;
+      border: 1px solid #ebecec;
+      border-radius: 10px;
+      padding: 20px 23px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 7px 0 rgba(60,72,91,0.05);
+    }
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 17px;
+    }
+    .section-list {
+      margin: 0;
+      padding-left: 22px;
+      color: #3a4761;
+      font-size: 15px;
+    }
+    .dashboard {
+      background: #fff;
+      border: 1px solid #ebecec;
+      border-radius: 10px;
+      padding: 21px 18px;
+      box-shadow: 0 2px 7px 0 rgba(60,72,91,0.05);
+    }
+    .dashboard-tabs {
+      display: flex;
+      border-bottom: 1px solid #e2e2e9;
+      margin-bottom: 18px;
+      gap: 20px;
+      font-size: 16px;
+    }
+    .dashboard-tab {
+      padding: 9px 0;
+      cursor: pointer;
+      color: #b0b2bf;
+      font-weight: 500;
+      margin-right: 24px;
+      transition: color 0.2s, border 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+    .dashboard-tab.active {
+      color: #253259;
+      border-color: #1e51a4;
+      font-weight: 700;
+    }
+    .dashboard-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .dashboard-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f2f7;
+      font-size: 15px;
+    }
+    .dashboard-item:last-child {
+      border-bottom: none;
+    }
+    .dashboard-status {
+      min-width: 70px;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .dashboard-status.done {
+      color: #38f399;
+    }
+    .dashboard-status.inprocess {
+      color: #2a90fc;
+    }
+    .dashboard-icons {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .dashboard-icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 17px;
+      color: #3b3e4f;
+      transition: color 0.2s;
+    }
+    .dashboard-icon-btn:hover {
+      color: #1e51a4;
+    }
+    @media (max-width: 900px) {
+      main { padding: 16px; }
+      .profile-block { flex-direction: column; align-items: start; gap: 20px;}
+      .course-info {width: 100%;}
+    }
+  </style>
+
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="logo">
+        <!-- Логотип или иконка -->
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+    <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+    <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+    <div class="user-info">
+      <span>Иван Иванов</span>
+      <div class="user-avatar"><i class="fas fa-user"></i></div>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="profile-block">
+    <div class="profile-image-area">
+      <label for="profilePhoto">
+        <img id="profileImg" src="https://via.placeholder.com/120x120?text=Фото" alt="Фото" class="profile-image">
+        <span class="avatar-edit-label">Загрузить фото</span>
+      </label>
+      <input id="profilePhoto" type="file" accept="image/*" style="display:none;" onchange="previewPhoto(event)">
+    </div>
+    <div class="course-info">
+      <div style="color: #7b7c85">Автор курса</div>
+      <div style="font-weight: bold; font-size: 23px; color: #273357;">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididu...
+      </div>
+      <input class="input-editable" value="Фамилия Имя Отчество" id="fioField">
+    </div>
+  </div>
+
+  <div class="sections">
+    <div class="section-block">
+      <div class="section-title">Раздел 1</div>
+      <ul class="section-list">
+        <li>Материал</li>
+        <li>lorem</li>
+        <li>Test</li>
+      </ul>
+    </div>
+    <div class="section-block">
+      <div class="section-title">Раздел 2</div>
+      <ul class="section-list">
+        <li>Материал</li>
+        <li>lorem</li>
+        <li>Test</li>
+      </ul>
+    </div>
+    <div class="section-block">
+      <div class="section-title">Раздел N</div>
+      <ul class="section-list">
+        <li>Материал</li>
+        <li>Задание с ответом в виде файла</li>
+        <li>Test</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="dashboard">
+    <div class="dashboard-tabs">
+      <div class="dashboard-tab active" onclick="switchDashboard(0)">Today Homeworks</div>
+      <div class="dashboard-tab" onclick="switchDashboard(1)">Recent</div>
+      <div class="dashboard-tab" onclick="switchDashboard(2)">Future</div>
+    </div>
+    <div id="dashboards">
+      <!-- Today Homeworks -->
+      <ul class="dashboard-list">
+        <li class="dashboard-item">
+          <span style="width: 7px; height: 35px; background: #00e0fc; border-radius:4px; display:inline-block;"></span>
+          <span>
+            <b>Book p. 77-85</b>, read & complete tasks 1-6 on p. 85 <span style="color:#888; font-size:12px;">(Physics)</span>
+          </span>
+          <span class="dashboard-status done">Done</span>
+          <span class="dashboard-icons">
+            <button class="dashboard-icon-btn" title="Просмотр"><i class="fas fa-eye"></i></button>
+            <button class="dashboard-icon-btn" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="dashboard-icon-btn" title="Загрузить"><i class="fas fa-upload"></i></button>
+            <button class="dashboard-icon-btn" title="Удалить"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+        <li class="dashboard-item">
+          <span style="width: 7px; height: 35px; background: #19e8cd; border-radius:4px; display:inline-block;"></span>
+          <span>
+            <b>Workbook p. 17</b>, tasks 1-6 <span style="color:#888; font-size:12px;">(Mathematics)</span>
+          </span>
+          <span class="dashboard-status inprocess">In Process</span>
+          <span class="dashboard-icons">
+            <button class="dashboard-icon-btn" title="Просмотр"><i class="fas fa-eye"></i></button>
+            <button class="dashboard-icon-btn" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="dashboard-icon-btn" title="Загрузить"><i class="fas fa-upload"></i></button>
+            <button class="dashboard-icon-btn" title="Удалить"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+        <li class="dashboard-item">
+          <span style="width: 7px; height: 35px; background: #35d8ff; border-radius:4px; display:inline-block;"></span>
+          <span>
+            <b>Learn paragraph p.99</b>, Exercise 1,2,3Scoping & Estimations <span style="color:#888; font-size:12px;">(Chemistry)</span>
+          </span>
+          <span class="dashboard-status done">Done</span>
+          <span class="dashboard-icons">
+            <button class="dashboard-icon-btn" title="Просмотр"><i class="fas fa-eye"></i></button>
+            <button class="dashboard-icon-btn" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="dashboard-icon-btn" title="Загрузить"><i class="fas fa-upload"></i></button>
+            <button class="dashboard-icon-btn" title="Удалить"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+        <li class="dashboard-item">
+          <span style="width: 7px; height: 35px; background: #865ef9; border-radius:4px; display:inline-block;"></span>
+          <span>
+            <b>Write essay 1000 words</b>: "WW2 results" <span style="color:#888; font-size:12px;">(History)</span>
+          </span>
+          <span class="dashboard-status inprocess">In Process</span>
+          <span class="dashboard-icons">
+            <button class="dashboard-icon-btn" title="Просмотр"><i class="fas fa-eye"></i></button>
+            <button class="dashboard-icon-btn" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="dashboard-icon-btn" title="Загрузить"><i class="fas fa-upload"></i></button>
+            <button class="dashboard-icon-btn" title="Удалить"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+        <li class="dashboard-item">
+          <span style="width: 7px; height: 35px; background: #7e6df3; border-radius:4px; display:inline-block;"></span>
+          <span>
+            Internal conflicts in Philip Larkin poems, read p 380-515 <span style="color:#888; font-size:12px;">(English Language)</span>
+          </span>
+          <span class="dashboard-status inprocess">In Process</span>
+          <span class="dashboard-icons">
+            <button class="dashboard-icon-btn" title="Просмотр"><i class="fas fa-eye"></i></button>
+            <button class="dashboard-icon-btn" title="Редактировать"><i class="fas fa-pen"></i></button>
+            <button class="dashboard-icon-btn" title="Загрузить"><i class="fas fa-upload"></i></button>
+            <button class="dashboard-icon-btn" title="Удалить"><i class="fas fa-trash"></i></button>
+          </span>
+        </li>
+      </ul>
+      <!-- Здесь аналогично Recent и Future, см. JS ниже -->
+    </div>
+  </div>
+</main>
