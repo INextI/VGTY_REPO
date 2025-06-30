@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторный отчет</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/check_works.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="logo">
+                <!-- Логотип или иконка -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
+            </div>
+          </div>
+          <div class="header-right">
+            <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+            <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+            <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+            <div class="user-info">
+              <span>Иван Иванов</span>
+              <div class="user-avatar"><i class="fas fa-user"></i></div>
+            </div>
+          </div>
+      </header>
+    <div class="container">
+        <div class="dashboard" onclick="alert('Панель кликабельная!')">
+            <div class="dashboard-header">
+                <select>
+                    <option>lab1</option>
+                    <option>lab2</option>
+                </select>
+                <span class="deadline">
+                    Конец сдачи: <b>12.12.1212 17:00</b>
+                </span>
+            </div>
+            <button class="close-btn" onclick="alert('Отчет закрыт!');event.stopPropagation();">Закрыть отчет</button>
+            <div class="table-container" onclick="event.stopPropagation();alert('Дашборд кликабельный!')">
+                <table>
+                    <tr>
+                        <th>Name Surname</th>
+                        <th>Группа</th>
+                        <th>Статус</th>
+                        <th>Комментарий</th>
+                    </tr>
+                    <tr>
+                        <td>Name Surname</td>
+                        <td></td>
+                        <td>Не оценено</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Name Surname</td>
+                        <td></td>
+                        <td>Оценено</td>
+                        <td>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed...</td>
+                    </tr>
+                    <tr>
+                        <td>Name Surname</td>
+                        <td></td>
+                        <td>Работа не выложена</td>
+                        <td></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="student-select">
+                <select>
+                    <option>Name Surname</option>
+                    <option>Name Surname2</option>
+                </select>
+            </div>
+            <div class="student-files">
+                <a href="#">File1</a>
+                <a href="#">File1</a>
+                <a href="#">File1</a>
+            </div>
+            <textarea class="comment-box" placeholder="Написать комментарий..."></textarea>
+            <button class="rate-btn" onclick="alert('Оценка отправлена!');event.stopPropagation();">Оценить</button>
+        </div>
+    </div>
+</body>
+</html>

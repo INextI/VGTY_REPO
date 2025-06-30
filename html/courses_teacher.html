@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTTY Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/courses_teacher.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="logo">
+                <!-- Логотип или иконка -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
+            </div>
+          </div>
+          <div class="header-right">
+            <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+            <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+            <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+            <div class="user-info">
+              <span>Иван Иванов</span>
+              <div class="user-avatar"><i class="fas fa-user"></i></div>
+            </div>
+          </div>
+      </header>
+
+    <main>
+        <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt...</h1>
+        <div class="controls">
+            <button>Добавить раздел</button>
+            <button>Настройка зачисления на курс</button>
+            <button>Оценка работ</button>
+            <button class="delete-btn">Удалить курс</button>
+        </div>
+        <div class="sections">
+            <div class="section-card">
+                <div class="section-header">
+                    <span>Раздел 1</span>
+                    <div>
+                        <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
+                    </div>
+                </div>
+                <ul>
+                    <li>Материал</li>
+                    <li>lorem</li>
+                    <li>Test</li>
+                </ul>
+            </div>
+            <div class="section-card">
+                <div class="section-header">
+                    <span>Раздел 1</span>
+                    <div>
+                        <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
+                    </div>
+                </div>
+                <ul>
+                    <li>Материал</li>
+                    <li>lorem</li>
+                    <li>Test</li>
+                </ul>
+            </div>
+            <div class="section-card">
+                <div class="section-header">
+                    <span>Раздел 1</span>
+                    <div>
+                        <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
+                    </div>
+                </div>
+                <ul>
+                    <li>Материал</li>
+                    <li>Задание с ответом в виде файла <a href="#" class="check">Проверить</a></li>
+                    <li>Test</li>
+                </ul>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <a href="#" class="dashboard-board">
+                <div class="board-title">Active Lessons</div>
+                <div class="board-desc">Avg. 72% completed lessons</div>
+                <ul class="lessons-list">
+                    <li><span class="lesson-icon laravel"></span> Laravel <span class="progress-bar" data-progress="65%"></span></li>
+                    <li><span class="lesson-icon vue"></span> Vue 3 <span class="progress-bar" data-progress="87%"></span></li>
+                    <li><span class="lesson-icon bootstrap"></span> Bootstrap 5 <span class="progress-bar" data-progress="44%"></span></li>
+                    <li><span class="lesson-icon angular"></span> Angular 13 <span class="progress-bar" data-progress="70%"></span></li>
+                    <li><span class="lesson-icon spring"></span> Spring <span class="progress-bar" data-progress="50%"></span></li>
+                    <li><span class="lesson-icon ts"></span> TypeScript <span class="progress-bar" data-progress="82%"></span></li>
+                </ul>
+            </a>
+            <a href="#" class="dashboard-board">
+                <div class="board-title">Members Statistics</div>
+                <div class="board-desc">Over 500 members</div>
+                <table class="members-table">
+                    <tr>
+                        <th>Authors</th><th>Company</th><th>Progress</th><th>Actions</th>
+                    </tr>
+                    <tr>
+                        <td><div class="avatar mini"></div> Ana Simmons<br><span class="sub">HTML, JS, ReactJS</span></td>
+                        <td>Intertico<br><span class="sub">Web, UI/UX Design</span></td>
+                        <td><span class="progress-table">
+                            <span class="progress-line" style="width:50%;background-color:#b36cff"></span>50%
+                        </span></td>
+                        <td>
+                            <a href="#"><svg width="16" height="16" fill="gray"><circle cx="8" cy="8" r="7"/></svg></a>
+                            <a href="#"><svg width="16" height="16" fill="gray"><rect x="2" y="7" width="12" height="2"/></svg></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div class="avatar mini"></div> Jessie Clarson<br><span class="sub">C#, ASP.NET, MS SQL</span></td>
+                        <td>Agoda<br><span class="sub">Houses & Hotels</span></td>
+                        <td><span class="progress-table">
+                            <span class="progress-line" style="width:70%;background-color:#f36"/></span>70%
+                        </span></td>
+                        <td>
+                            <a href="#"><svg width="16" height="16" fill="gray"><circle cx="8" cy="8" r="7"/></svg></a>
+                            <a href="#"><svg width="16" height="16" fill="gray"><rect x="2" y="7" width="12" height="2"/></svg></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div class="avatar mini"></div> Lebron Wayde<br><span class="sub">PHP, Laravel, VueJS</span></td>
+                        <td>RoadGee<br><span class="sub">Transportation</span></td>
+                        <td><span class="progress-table">
+                            <span class="progress-line" style="width:60%;background-color:#29d6a1"></span>60%
+                        </span></td>
+                        <td>
+                            <a href="#"><svg width="16" height="16" fill="gray"><circle cx="8" cy="8" r="7"/></svg></a>
+                            <a href="#"><svg width="16" height="16" fill="gray"><rect x="2" y="7" width="12" height="2"/></svg></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><div class="avatar mini"></div> Natali Goodwin<br><span class="sub">Python, PostgreSQL, ReactJS</span></td>
+                        <td>The Hill<br><span class="sub">Insurance</span></td>
+                        <td><span class="progress-table">
+                            <span class="progress-line" style="width:50%;background-color:#ffd700"></span>50%
+                        </span></td>
+                        <td>
+                            <a href="#"><svg width="16" height="16" fill="gray"><circle cx="8" cy="8" r="7"/></svg></a>
+                            <a href="#"><svg width="16" height="16" fill="gray"><rect x="2" y="7" width="12" height="2"/></svg></a>
+                        </td>
+                    </tr>
+                </table>
+            </a>
+        </div>
+    </main>
+</body>
+</html>
