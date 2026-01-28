@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Курс ВГТУ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/styles/courses_student.css">
+</head>
+
+<body>
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <div class="logo">
+          <a href="home_student.html">
+            <!-- Логотип или иконка -->
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+              alt="logo" width="24" height="34">
+          </a>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+        <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+        <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+        <div class="user-info">
+          <span>Иван Иванов</span>
+          <a href="student.html" class="user-avatar">
+            <i class="fas fa-user"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <main class="container">
+    <div class="profile-block">
+      <div class="profile-image-area">
+        <label for="profilePhoto">
+          <img id="profileImg" src="https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_user_personalization&w=740&q=80" alt="Фото" class="profile-image">
+        </label>
+        <input id="profilePhoto" type="file" accept="image/*" style="display:none;" onchange="previewPhoto(event)">
+      </div>
+      <div class="course-info">
+        <div style="color: #7b7c85">Автор курса</div>
+        <div style="font-weight: bold; font-size: 23px; color: #273357;">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididu...
+        </div>
+        <input class="input-editable" value="Фамилия Имя Отчество" id="fioField">
+      </div>
+    </div>
+
+    <div class="sections">
+      <div class="section-block">
+        <div class="section-title">Раздел 1</div>
+        <ul class="section-list">
+          <li>Материал</li>
+          <li>lorem</li>
+          <li>Test</li>
+        </ul>
+      </div>
+      <div class="section-block">
+        <div class="section-title">Раздел 2</div>
+        <ul class="section-list">
+          <li>Материал</li>
+          <li>lorem</li>
+          <li>Test</li>
+        </ul>
+      </div>
+      <div class="section-block">
+        <div class="section-title">Раздел N</div>
+        <ul class="section-list">
+          <li>Материал</li>
+          <li>Задание с ответом в виде файла</li>
+          <li>Test</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dashboard">
+      <div class="dashboard-tabs">
+        <div class="dashboard-tab active" onclick="switchDashboard(0)">Today Homeworks</div>
+        <div class="dashboard-tab" onclick="switchDashboard(1)">Recent</div>
+        <div class="dashboard-tab" onclick="switchDashboard(2)">Future</div>
+      </div>
+      <div id="dashboards">
+        <!-- Today Homeworks -->
+            <ul class="dashboard-list">
+
+              <li class="dashboard-item">
+                <span class="dashboard-bar" style="background:#00e0fc;"></span>
+
+                <span class="dashboard-text">
+                  <b>Book p. 77–85</b>, read & complete tasks 1–6 on p. 85
+                  <span class="subject">(Physics)</span>
+                </span>
+
+                <span class="dashboard-status done">Done</span>
+
+                <span class="dashboard-icons">
+                  <button class="dashboard-icon-btn"><i class="fas fa-eye"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-pen"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-upload"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-trash"></i></button>
+                </span>
+              </li>
+
+              <li class="dashboard-item">
+                <span class="dashboard-bar" style="background:#19e8cd;"></span>
+
+                <span class="dashboard-text">
+                  <b>Workbook p. 17</b>, tasks 1–6
+                  <span class="subject">(Mathematics)</span>
+                </span>
+
+                <span class="dashboard-status inprocess">In Process</span>
+
+                <span class="dashboard-icons">
+                  <button class="dashboard-icon-btn"><i class="fas fa-eye"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-pen"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-upload"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-trash"></i></button>
+                </span>
+              </li>
+
+              <li class="dashboard-item">
+                <span class="dashboard-bar" style="background:#35d8ff;"></span>
+
+                <span class="dashboard-text">
+                  <b>Learn paragraph p.99</b>, Exercise 1,2,3
+                  <span class="subject">(Chemistry)</span>
+                </span>
+
+                <span class="dashboard-status done">Done</span>
+
+                <span class="dashboard-icons">
+                  <button class="dashboard-icon-btn"><i class="fas fa-eye"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-pen"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-upload"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-trash"></i></button>
+                </span>
+              </li>
+
+              <li class="dashboard-item">
+                <span class="dashboard-bar" style="background:#865ef9;"></span>
+
+                <span class="dashboard-text">
+                  <b>Write essay 1000 words</b>: "WW2 results"
+                  <span class="subject">(History)</span>
+                </span>
+
+                <span class="dashboard-status inprocess">In Process</span>
+
+                <span class="dashboard-icons">
+                  <button class="dashboard-icon-btn"><i class="fas fa-eye"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-pen"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-upload"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-trash"></i></button>
+                </span>
+              </li>
+
+              <li class="dashboard-item">
+                <span class="dashboard-bar" style="background:#7e6df3;"></span>
+
+                <span class="dashboard-text">
+                  Internal conflicts in Philip Larkin poems, read p 380–515
+                  <span class="subject">(English Language)</span>
+                </span>
+
+                <span class="dashboard-status inprocess">In Process</span>
+
+                <span class="dashboard-icons">
+                  <button class="dashboard-icon-btn"><i class="fas fa-eye"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-pen"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-upload"></i></button>
+                  <button class="dashboard-icon-btn"><i class="fas fa-trash"></i></button>
+                </span>
+              </li>
+
+            </ul>
+
+      </div>
+    </div>
+  </main>

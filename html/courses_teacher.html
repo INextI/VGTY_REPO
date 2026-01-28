@@ -9,41 +9,42 @@
 </head>
 <body>
     <header>
-        <div class="header-left">
-            <div class="logo">
-                <a href="home_teacher.html">
-                <!-- Логотип или иконка -->
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
-            </a>
+        <div class="header-container">
+            <div class="header-left">
+                <div class="logo">
+                    <a href="home_teacher.html">
+                    <!-- Логотип или иконка -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
+                </a>
+                </div>
             </div>
-          </div>
-          <div class="header-right">
-            <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
-            <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
-            <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
-            <div class="user-info">
-              <span>Иван Иванов</span>
-              <div class="user-avatar"><i class="fas fa-user"></i></div>
+            <div class="header-right">
+                <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+                <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+                <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+                <div class="user-info">
+                <span>Иван Иванов</span>
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                </div>
             </div>
-          </div>
-      </header>
-
-    <main>
-        <h1>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt...</h1>
-        <div class="controls">
-            <button>Добавить раздел</button>
-            <button>Настройка зачисления на курс</button>
-
-            <button> <a href="check_works.html">Оценка работ</a>
-            </button>
-
-            <button class="delete-btn">Удалить курс</button>
         </div>
+    </header>
+
+    <div class="container">
+        <h1 class="course-title">Lorem ipsum dolor sit amet, consectetur adipiscing elit...</h1>
+
+        <div class="controls">
+            <button class="secondary-btn">Добавить раздел</button>
+            <button class="secondary-btn">Настройка зачисления на курс</button>
+            <button class="secondary-btn"><a href="check_works.html">Оценка работ</a></button>
+            <button class="main-btn delete-btn">Удалить курс</button>
+        </div>
+
         <div class="sections">
             <div class="section-card">
                 <div class="section-header">
                     <span>Раздел 1</span>
-                    <div>
+                    <div class="section-actions">
                         <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
                     </div>
                 </div>
@@ -55,8 +56,8 @@
             </div>
             <div class="section-card">
                 <div class="section-header">
-                    <span>Раздел 1</span>
-                    <div>
+                    <span>Раздел 2</span>
+                    <div class="section-actions">
                         <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
                     </div>
                 </div>
@@ -68,8 +69,8 @@
             </div>
             <div class="section-card">
                 <div class="section-header">
-                    <span>Раздел 1</span>
-                    <div>
+                    <span>Раздел 3</span>
+                    <div class="section-actions">
                         <a href="#">Редактировать</a> | <a href="#" class="delete">Удалить</a>
                     </div>
                 </div>
@@ -80,6 +81,7 @@
                 </ul>
             </div>
         </div>
+
         <div class="dashboard-row">
             <a href="#" class="dashboard-board">
                 <div class="board-title">Active Lessons</div>
@@ -147,6 +149,6 @@
                 </table>
             </a>
         </div>
-    </main>
+    </div>
 </body>
 </html>
