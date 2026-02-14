@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создать курс</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="../css/creat_courses.css">
+</head>
+<body>
+    <header>
+      <div class="header-container">
+          <div class="header-left">
+              <div class="logo">
+                  <a href="home_teacher.html">
+                  <!-- Логотип или иконка -->
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="logo" width="24" height="34">
+              </div>
+          </div>
+          <div class="header-right">
+              <button class="icon" title="Поиск"><i class="fas fa-search"></i></button>
+              <button class="icon" title="Уведомления"><i class="fas fa-bell"></i></button>
+              <button class="icon" title="Чат"><i class="fas fa-comments"></i></button>
+              <div class="user-info">
+                <span>Иван Иванов</span>
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+              </div>
+          </div>
+      </div>
+    </header>
+
+  <div class="container">
+    <div class="main-section">
+      <div class="image-upload" tabindex="0" onclick="alert('Добавить изображение');">
+        Добавить изображение
+      </div>
+      <div class="course-title-section">
+        <input id="courseName" class="course-title-input" type="text" placeholder="Название курса..." />
+        <button class="enroll-btn" onclick="alert('Настройка зачисления на курс');">Настройка зачисления на курс</button>
+      </div>
+    </div>
+    <div class="dashboard" tabindex="0" onclick="alert('Редактировать описание курса');">
+      <div class="dashboard-label">Описание</div>
+      <textarea id="courseDesc" class="dashboard-desc-input" placeholder="Введите описание..."></textarea>
+    </div>
+    <div class="button-row">
+      <button class="main-btn btn-cancel" onclick="alert('Отменить');">Отменить</button>
+      <button class="main-btn btn-create" id="saveCourseBtn">Создать</button>
+    </div>
+  </div>
+
+<script src="../js/create_courses.js"></script>
+  
+</body>
+
+</html>

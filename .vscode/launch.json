@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // КОНФИГУРАЦИЯ ДЛЯ ЗАПУСКА СЕРВЕРА NODE.JS
+            "type": "node",
+            "request": "launch",
+            "name": "Запустить Node.js сервер",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            // Укажите правильный путь к вашему файлу server.js
+            "program": "C:/Users/dmitr/my-backend/src/server.js" 
+        },
+        {
+            // ВАША СТАРАЯ КОНФИГУРАЦИЯ, НО С ИСПРАВЛЕННЫМ ПОРТОМ
+            "type": "chrome",
+            "request": "launch",
+            "name": "Запустить Chrome на localhost",
+        
+            "url": "http://localhost:5000",
+            "webRoot": "C:/Users/dmitr/my-backend/src/app.js"
+        }
+    ]
+}
+    
