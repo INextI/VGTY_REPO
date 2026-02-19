@@ -1,5 +1,5 @@
 const sequelize = require('../config/db')
-const {DataTypes, UUIDV4} = require('sequelize')
+const {DataTypes} = require('sequelize')
 
 const Role = sequelize.define('role',{
     id: {type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4},
