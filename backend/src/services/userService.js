@@ -4,15 +4,7 @@ const User = require('../models/userModel');
 const Student = require('../models/studentModel');
 const Employee = require('../models/employeeModel');
 
-
-//ВЫНЕСТИ ПОТОМ В ОТДЕЛЬНЫЙ МОДУЛЬ
-const saltRounds = 10;
-
-async function hashPassword(plainPassword) {
-    const hash = await bcrypt.hash(plainPassword, saltRounds);
-    return hash;
-}
-//======================
+const authService = require('./authService')
 
 
 
@@ -48,10 +40,11 @@ class UserService {
     async createFullUser(data) {
         return await sequelize.transaction(async (t) => {
             // Создаём пользователя
+            const passwordHash = authService.hashPassword(data.password)
             const user = await User.create({
                 login: data.login,
-                password_hash: hashPassword(data.password),
-                is_active: true
+                password_hash: passwordHash,
+                role: data.role,
             }, { transaction: t });
 
             // Если это студент
