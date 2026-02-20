@@ -10,6 +10,7 @@ const Group = require('./groupModel');
 const Discipline = require('./disciplineModel');
 const EducationForm = require('./educationFormModel')
 const EduProgramm = require('./eduProgrammModel')
+const Token = require('./tokenModel');
 
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
@@ -17,11 +18,11 @@ const GroupDiscipline = require('./groupDisciplineModel');
 //связи
 
 // Связь "Один-к-Одному": User <-> Student
-User.hasOne(Student, { foreignKey: 'user_id' })
+User.hasOne(Student, { foreignKey: 'user_id', onDelete: 'CASCADE' })
 Student.belongsTo(User, { foreignKey: 'user_id' })
 
 // Связь "Один-к-Одному": User <-> Employee
-User.hasOne(Employee, { foreignKey: 'user_id' })
+User.hasOne(Employee, { foreignKey: 'user_id', onDelete: 'CASCADE' })
 Employee.belongsTo(User, { foreignKey: 'user_id' })
 
 //Employee ↔ Role (Многие к одному)
@@ -64,7 +65,9 @@ Discipline.belongsTo(Department, { foreignKey: 'department_id' })
 EducationForm.hasMany(Discipline, { foreignKey: 'education_form_id' })
 Discipline.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 
-
+// Связь "Один-к-Одному": User ↔ Token
+User.hasOne(Token, {foreignKey: 'user_id', onDelete: 'CASCADE'})
+Token.belongsTo(User, { foreignKey: 'user_id'})
 
 // === Связь "Многие-ко-Многим": Group <-> Discipline ===
 Group.belongsToMany(Discipline, {

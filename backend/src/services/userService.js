@@ -40,7 +40,7 @@ class UserService {
     async createFullUser(data) {
         return await sequelize.transaction(async (t) => {
             // Создаём пользователя
-            const passwordHash = authService.hashPassword(data.password)
+            const passwordHash = await authService.hashPassword(data.password)
             const user = await User.create({
                 login: data.login,
                 password_hash: passwordHash,
