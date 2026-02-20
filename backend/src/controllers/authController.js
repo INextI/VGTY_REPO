@@ -21,6 +21,9 @@ class AuthController {
     async logout(req,res) {
       try {
         const {refreshToken} = req.cookies
+        if (!refreshToken) {
+          throw new Error('Нет токена')
+        }
         await authService.logout(refreshToken)
 
         res.clearCookie('refreshToken')
