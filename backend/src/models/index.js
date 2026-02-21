@@ -11,6 +11,7 @@ const Discipline = require('./disciplineModel');
 const EducationForm = require('./educationFormModel')
 const EduProgramm = require('./eduProgrammModel')
 const Token = require('./tokenModel');
+const Role = require('./roleModel')
 
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
