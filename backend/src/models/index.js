@@ -26,9 +26,9 @@ Student.belongsTo(User, { foreignKey: 'user_id' })
 User.hasOne(Employee, { foreignKey: 'user_id', onDelete: 'CASCADE' })
 Employee.belongsTo(User, { foreignKey: 'user_id' })
 
-//Employee ↔ Role (Многие к одному)
+//User ↔ Role (Многие к одному)
 Role.hasMany(Employee, { foreignKey: 'role_id' })
-Employee.belongsTo(Role, { foreignKey: 'role_id' })
+User.belongsTo(Role, { foreignKey: 'role_id' })
 
 // Связь "Один-ко-Многим": Department -> Employees
 Department.hasMany(Employee, { foreignKey: 'department_id' })

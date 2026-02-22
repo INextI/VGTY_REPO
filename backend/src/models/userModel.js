@@ -6,7 +6,7 @@ const User = sequelize.define('user', {
     id: {type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4},
     login: {type: DataTypes.STRING, allowNull: false, unique: true},
     password_hash: {type: DataTypes.TEXT, allowNull: false},
-    role: { type: DataTypes.ENUM('student', 'employee', 'admin'), allowNull: false },   // ПРЕДЛАГАЮ ДОБАВИТЬ ТАК ЛИБО СДЕЛАТЬ ОТДЕЛЬНУЮ ТАБЛУ ДЛЯ РОЛЕЙ С ДОСТУПОМ (второе наверное правильнее)
+    role_id: { type: DataTypes.UUID, allowNull: false },   // ПРЕДЛАГАЮ ДОБАВИТЬ ТАК ЛИБО СДЕЛАТЬ ОТДЕЛЬНУЮ ТАБЛУ ДЛЯ РОЛЕЙ С ДОСТУПОМ (второе наверное правильнее)
     is_active: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true},
     last_login: {type: DataTypes.DATE}
 },{
