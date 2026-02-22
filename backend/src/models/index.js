@@ -12,6 +12,7 @@ const EducationForm = require('./educationFormModel')
 const EduProgramm = require('./eduProgrammModel')
 const Token = require('./tokenModel');
 const Role = require('./roleModel')
+const DisciplineEmployee = require('./disciplineEmployeeModel')
 
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
@@ -27,7 +28,7 @@ User.hasOne(Employee, { foreignKey: 'user_id', onDelete: 'CASCADE' })
 Employee.belongsTo(User, { foreignKey: 'user_id' })
 
 //User ↔ Role (Многие к одному)
-Role.hasMany(Employee, { foreignKey: 'role_id' })
+Role.hasMany(User, { foreignKey: 'role_id' })
 User.belongsTo(Role, { foreignKey: 'role_id' })
 
 // Связь "Один-ко-Многим": Department -> Employees
@@ -70,6 +71,10 @@ Discipline.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 User.hasOne(Token, {foreignKey: 'user_id', onDelete: 'CASCADE'})
 Token.belongsTo(User, { foreignKey: 'user_id'})
 
+// Связь "Один-ко-Многим": Employee -> Discipline
+Discipline.belongsTo(Employee, {foreignKey: 'owner_employee_id', as: 'owner'})
+Employee.hasMany(Discipline, {foreignKey: 'owner_employee_id', as: 'owned_disciplines'})
+
 // === Связь "Многие-ко-Многим": Group <-> Discipline ===
 Group.belongsToMany(Discipline, {
    through: GroupDiscipline,
@@ -83,6 +88,20 @@ Discipline.belongsToMany(Group, {
    otherKey: 'group_id'
 })
 
+// === Связь "Многие-ко-Многим": Discipline <-> Employee ===
+Discipline.belongsToMany(Employee, {
+   through: DisciplineEmployee,
+   foreignKey: 'discipline_id',
+   otherKey: 'employee_id',
+   as: 'connected_employees'
+})
+
+Employee.belongsToMany(Discipline, {
+   through: DisciplineEmployee,
+   foreignKey: 'employee_id',
+   otherKey: 'discipline_id',
+   as: 'connected_disciplines'
+})
 
 module.exports = {
     User,
