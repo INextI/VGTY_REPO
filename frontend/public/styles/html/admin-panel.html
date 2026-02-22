@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - Создать пользователя</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, select, button { width: 100%; padding: 10px; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        #message { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>Создать нового пользователя</h1>
+
+    <form id="createUserForm">
+        <!-- Основные поля -->
+        <div class="form-group">
+            <label for="firstName">Имя:</label>
+            <input type="text" id="firstName" name="firstName" required>
+        </div>
+        <div class="form-group">
+            <label for="lastName">Фамилия:</label>
+            <input type="text" id="lastName" name="lastName" required>
+        </div>
+        <div class="form-group">
+            <label for="patronymic">Отчество (необязательно):</label>
+            <input type="text" id="patronymic" name="patronymic">
+        </div>
+        <div class="form-group">
+            <label for="login">Логин:</label>
+            <input type="text" id="login" name="login" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" name="password" required minlength="6">
+        </div>
+        <div class="form-group">
+            <label for="role">Роль:</label>
+            <select id="role" name="role" required>
+                <option value="" disabled selected>-- Выберите роль --</option>
+                <option value="student">Студент</option>
+                <option value="teacher">Преподаватель</option>
+                <option value="admin">Администратор</option>
+            </select>
+        </div>
+
+        <!-- Поля, специфичные для студента -->
+        <div id="studentFields" class="hidden">
+            <div class="form-group">
+                <label for="educationFormId">ID Формы обучения (обязательно):</label>
+                <input type="number" id="educationFormId" name="educationFormId">
+            </div>
+            <div class="form-group">
+                <label for="groupId">ID Группы (необязательно):</label>
+                <input type="number" id="groupId" name="groupId">
+            </div>
+        </div>
+
+        <!-- Поля, специфичные для сотрудника (преподаватель, администратор) -->
+        <div id="employeeFields" class="hidden">
+            <div class="form-group">
+                <label for="positionId">ID Должности (необязательно):</label>
+                <input type="number" id="positionId" name="positionId">
+            </div>
+             <div class="form-group">
+                <label for="departmentId">ID Кафедры/отдела (необязательно):</label>
+                <input type="number" id="departmentId" name="departmentId">
+            </div>
+        </div>
+
+        <button type="submit">Создать пользователя</button>
+    </form>
+
+    <div id="message"></div>
+
+    <script>
+    const form = document.getElementById('createUserForm');
+    const messageDiv = document.getElementById('message');
+    const roleSelect = document.getElementById('role');
+    const studentFields = document.getElementById('studentFields');
+    const employeeFields = document.getElementById('employeeFields');
+    //const educationFormIdInput = document.getElementById('educationFormId');
+    const API_BASE_URL = 'http://localhost:5000';
+
+    roleSelect.addEventListener('change', (event) => {
+        const selectedRole = event.target.value;
+        studentFields.classList.add('hidden');
+        employeeFields.classList.add('hidden');
+        //educationFormIdInput.required = false;
+
+        if (selectedRole === 'student') {
+            studentFields.classList.remove('hidden');
+            //educationFormIdInput.required = true;
+        } else if (selectedRole === 'teacher' || selectedRole === 'admin') {
+            employeeFields.classList.remove('hidden');
+        }
+    });
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        messageDiv.textContent = '';
+        messageDiv.className = '';
+
+        const formData = new FormData(form);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (value) data[key] = value;
+        });
+
+        // 1. ПОЛУЧАЕМ ТОКЕН ИЗ LOCALSTORAGE
+        const token = localStorage.getItem('token');
+        
+        // 2. ПРОВЕРЯЕМ НАЛИЧИЕ ТОКЕНА ПЕРЕД ОТПРАВКОЙ
+        if (!token) {
+            messageDiv.textContent = 'Ошибка: вы не авторизованы. Войдите в систему снова.';
+            messageDiv.className = 'error';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 3. ОБЯЗАТЕЛЬНО ПЕРЕДАЕМ ТОКЕН В ЗАГОЛОВКЕ
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json().catch(() => ({})); 
+
+            if (response.ok) {
+                messageDiv.textContent = `Пользователь успешно создан!`;
+                messageDiv.className = 'success';
+                form.reset();
+                studentFields.classList.add('hidden');
+                employeeFields.classList.add('hidden');
+            } else {
+                messageDiv.textContent = `Ошибка: ${result.message || response.statusText}`;
+                messageDiv.className = 'error';
+            }
+
+        } catch (error) {
+            console.error('Детали ошибки:', error);
+            messageDiv.textContent = `Ошибка выполнения: ${error.message}`;
+            messageDiv.className = 'error';
+        }
+    });
+</script>
+
+</body>
+</html>
