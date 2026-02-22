@@ -23,14 +23,14 @@ class UserService {
     }
 
     async updateUser(id, data) {
-        const user = await findByPk(id)
+        const user = await User.findByPk(id)
         if (!user) throw new Error("Пользователь не найден")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         return await user.update(data)
     }
 
     async deleteUser(id) {
-        const user = await findByPk(id)
+        const user = await User.findByPk(id)
         if (!user) throw new Error("Пользователь не найден")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         await user.destroy()

@@ -3,7 +3,10 @@ const {DataTypes} = require('sequelize')
 
 const Role = sequelize.define('role',{
     id: {type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4},
-    name: {type: DataTypes.ENUM('student', 'employee', 'admin'), allowNull: false}
+    name: {type: DataTypes.ENUM('student', 'employee', 'admin'), allowNull: false} //Пока только три будет ENUM потом убрать
+}, {
+    tableName: 'roles',
+    timestamps: false
 })
 
 module.exports = Role

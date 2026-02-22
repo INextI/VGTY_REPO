@@ -14,14 +14,14 @@ class EmployeeService {
     }
 
     async updateEmployee(id, data) {
-        const user = await findByPk(id)
+        const user = await Employee.findByPk(id)
         if (!user) throw new Error("Пользователь не найден")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         return await user.update(data)
     }
 
     async deleteEmployee(id) {
-        const user = await findByPk(id)
+        const user = await Employee.findByPk(id)
         if (!user) throw new Error("Пользователь не найден")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         await user.destroy()
