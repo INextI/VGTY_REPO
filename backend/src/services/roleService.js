@@ -26,6 +26,12 @@ class RoleService {
         await role.destroy()
         return { message: 'Удалено'}
     }
+
+    async getRoleByName(name) {
+        const role = await Role.findOne({where: {name}})
+        if (!role) throw new Error("Роль с таким именем не найдена")
+        return role
+    }
 }
 
 module.exports = new RoleService()

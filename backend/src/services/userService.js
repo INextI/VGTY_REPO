@@ -5,6 +5,7 @@ const Student = require('../models/studentModel');
 const Employee = require('../models/employeeModel');
 
 const authService = require('./authService')
+const roleService = require('./roleService')
 
 
 
@@ -40,15 +41,17 @@ class UserService {
     async createFullUser(data) {
         return await sequelize.transaction(async (t) => {
             // Создаём пользователя
+            const role = await roleService.getRoleByName(data.role)
+
             const passwordHash = await authService.hashPassword(data.password)
             const user = await User.create({
                 login: data.login,
                 password_hash: passwordHash,
-                role: data.role,
+                role_id: role.id,
             }, { transaction: t });
 
             // Если это студент
-            if (data.role === 'student') {
+            if (role.name === 'student') {
                 await Student.create({
                     user_id: user.id,
                     first_name: data.first_name,
@@ -61,7 +64,7 @@ class UserService {
             }
 
             // Если это сотрудник
-            if (data.role === 'employee') {
+            if (role.name === 'employee') {
                 await Employee.create({
                     user_id: user.id,
                     first_name: data.first_name,
