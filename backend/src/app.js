@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
-
+app.use("/static", express.static("src/static"));
 app.use('/api', router)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

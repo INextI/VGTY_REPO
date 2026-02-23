@@ -4,13 +4,17 @@ const sequelize = require('./config/db')
 
 const swaggerAutogen = require('swagger-autogen')();
 const outputFile = './swagger-output.json';
-const endpointsFiles = ['./app.js']; // укажи файлы с роутами
+const endpointsFiles = ['./app.js']; // файлы с роутами
+
+const {createFolders} = require('./config/storage')
 
 const PORT = process.env.PORT || 5000
 
 const start = async () => {
   try {
     await swaggerAutogen(outputFile, endpointsFiles);
+
+    createFolders();
 
     const app = require('./app')
     await sequelize.authenticate()
