@@ -8,8 +8,9 @@ const Student = sequelize.define('student',{
    last_name: {type: DataTypes.STRING, allowNull: false},
    patronymic: {type: DataTypes.STRING},
    birth_date: {type: DataTypes.DATEONLY},
-   group_id: {type: DataTypes.UUID},
-   education_form_id: {type: DataTypes.UUID}
+   faculty_id: {type: DataTypes.UUID, allowNull: false},
+   group_id: {type: DataTypes.UUID, allowNull: false},
+   education_form_id: {type: DataTypes.UUID, allowNull: false}
 },{
    tableName: 'students',
    timestamps: false

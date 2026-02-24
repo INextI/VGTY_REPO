@@ -5,17 +5,19 @@ const sequelize = require('../config/db')
 const User = require('./userModel');
 const Student = require('./studentModel');
 const Employee = require('./employeeModel');
-const Department = require('./departmentModel');
 const Group = require('./groupModel');
 const Discipline = require('./disciplineModel');
 const EducationForm = require('./educationFormModel')
 const EduProgramm = require('./eduProgrammModel')
 const Token = require('./tokenModel');
 const Role = require('./roleModel')
-const DisciplineEmployee = require('./disciplineEmployeeModel')
+const AcademicYear = require('./academicYearModel')
+const Faculty = require('./facultyModel')
+
 
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
+const DisciplineEmployee = require('./disciplineEmployeeModel')
 
 //связи
 
@@ -31,41 +33,43 @@ Employee.belongsTo(User, { foreignKey: 'user_id' })
 Role.hasMany(User, { foreignKey: 'role_id' })
 User.belongsTo(Role, { foreignKey: 'role_id' })
 
-// Связь "Один-ко-Многим": Department -> Employees
-Department.hasMany(Employee, { foreignKey: 'department_id' })
-Employee.belongsTo(Department, { foreignKey: 'department_id' })
+// Связь "Один-ко-Многим": Faculty -> Employees
+Faculty.hasMany(Employee, { foreignKey: 'faculty_id' })
+Employee.belongsTo(Faculty, { foreignKey: 'faculty_id' })
 
 // Связь "Один-ко-Многим": Group -> Students
-Group.hasMany(Student, { foreignKey: 'group_id' })
-Student.belongsTo(Group, { foreignKey: 'group_id' })
+Group.hasMany(Student, { foreignKey: 'group_id', as: 'students' })
+Student.belongsTo(Group, { foreignKey: 'group_id', as: 'group' })
 
 //Student ↔ EducationForm (Многие к одному)
 EducationForm.hasMany(Student, { foreignKey: 'education_form_id' })
 Student.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 
 //Group ↔ EduProgram (Многие к одному)
-EduProgramm.hasMany(Group, { foreignKey: 'edu_program_id' })
-Group.belongsTo(EduProgramm, { foreignKey: 'edu_program_id' })
+EduProgramm.hasMany(Group, { foreignKey: 'edu_program_id', onDelete: 'CASCADE', as: 'groups' })
+Group.belongsTo(EduProgramm, { foreignKey: 'edu_program_id', as: 'eduProgramm' })
+
+// Связь "Один-к-Одному": Group ↔ AcademicYear
+AcademicYear.hasMany(Group, { foreignKey: 'academic_year_id', onDelete: 'CASCADE' })
+Group.belongsTo(AcademicYear, { foreignKey: 'academic_year_id'})
 
 // Связь "Один-к-Одному": Group ↔ Employee
-Employee.hasMany(Group, { foreignKey: 'curator_id', as: 'CuratedGroups' })
-Group.belongsTo(Employee, { foreignKey: 'curator_id', as: 'Curator' })
+Employee.hasMany(Group, { foreignKey: 'curator_id', as: 'curatedGroups' })
+Group.belongsTo(Employee, { foreignKey: 'curator_id', as: 'curator' })
 
-// Связь "Один-к-Одному": EduProgram ↔ Department
-Department.hasMany(EduProgramm, { foreignKey: 'department_id' })
-EduProgramm.belongsTo(Department, { foreignKey: 'department_id' })
+// Связь "Один-к-Одному": EduProgram ↔ Faculty
+Faculty.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
+EduProgramm.belongsTo(Faculty, { foreignKey: 'faculty_id' })
 
+/*
 // Связь "Один-к-Одному": EduProgram ↔ EducationForm
 EducationForm.hasMany(EduProgramm, { foreignKey: 'education_form_id' })
 EduProgramm.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 
-// Связь "Один-к-Одному": Discipline ↔ Department
-Department.hasMany(Discipline, { foreignKey: 'department_id' })
-Discipline.belongsTo(Department, { foreignKey: 'department_id' })
-
 // Связь "Один-к-Одному": Discipline ↔ EducationForm
 EducationForm.hasMany(Discipline, { foreignKey: 'education_form_id' })
 Discipline.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
+*/
 
 // Связь "Один-к-Одному": User ↔ Token
 User.hasOne(Token, {foreignKey: 'user_id', onDelete: 'CASCADE'})

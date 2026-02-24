@@ -6,7 +6,7 @@ const Group = sequelize.define('group', {
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
     edu_program_id: {type: DataTypes.UUID, allowNull: false},
     curator_id: {type: DataTypes.UUID},
-    academic_year_id: {type: DataTypes.INTEGER}
+    academic_year_id: {type: DataTypes.UUID, allowNull: false}
 }, {
     tableName: 'groups',
     timestamps: false

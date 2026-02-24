@@ -8,7 +8,7 @@ const Employee = sequelize.define('Employee', {
     last_name: {type: DataTypes.STRING, allowNull: false},
     patronymic: {type: DataTypes.STRING},
     birth_date: {type: DataTypes.DATEONLY},
-    department_id: {type: DataTypes.UUID},
+    faculty_id: {type: DataTypes.UUID},
     grade_id: {type: DataTypes.UUID}
 }, { 
     tableName: 'employees', 
