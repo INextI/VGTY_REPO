@@ -48,4 +48,4 @@ class EducationFormController {
 }
 
 
-module.exports = new EduProgrammController()
+module.exports = new EducationFormController()
