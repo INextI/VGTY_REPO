@@ -1,6 +1,6 @@
 const AcademicYear = require('../models/academicYearModel')
 
-class AcademicYear {
+class AcademicYearService {
     async createAcademicYear(data) {
         return await AcademicYear.create(data)
     }
@@ -22,4 +22,4 @@ class AcademicYear {
     }
 }
 
-module.exports = new AcademicYear()
+module.exports = new AcademicYearService()

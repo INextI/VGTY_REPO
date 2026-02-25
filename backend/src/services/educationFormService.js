@@ -1,6 +1,6 @@
 const educationForm = require('../models/educationFormModel')
 
-class EducationForm {
+class EducationFormService {
     async createEducationForm(data) {
         return await educationForm.create(data)
     }
@@ -29,4 +29,4 @@ class EducationForm {
     }
 }
 
-module.exports = new EducationForm()
+module.exports = new EducationFormService()
