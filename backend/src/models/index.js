@@ -61,11 +61,12 @@ Group.belongsTo(Employee, { foreignKey: 'curator_id', as: 'curator' })
 Faculty.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
 EduProgramm.belongsTo(Faculty, { foreignKey: 'faculty_id' })
 
-/*
-// Связь "Один-к-Одному": EduProgram ↔ EducationForm
+
+// Связь "Один-к-Многим": EduProgram ↔ EducationForm
 EducationForm.hasMany(EduProgramm, { foreignKey: 'education_form_id' })
 EduProgramm.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 
+/*
 // Связь "Один-к-Одному": Discipline ↔ EducationForm
 EducationForm.hasMany(Discipline, { foreignKey: 'education_form_id' })
 Discipline.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
