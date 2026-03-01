@@ -1,0 +1,31 @@
+services:
+
+  pg:
+    image: postgres
+    container_name: database_pg
+    environment:
+      POSTGRES_DB: Ultramar
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+    volumes:
+    - pgdata:/var/lib/postgresql/data
+
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_SERVER_MODE: 'False'
+    
+    ports:
+      - "5050:80"
+
+    depends_on:
+      - pg
+
+volumes:
+  pgdata:
