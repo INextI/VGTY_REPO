@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser')
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
+require('./models') 
 
 // Импорт роутов
 const router = require('./routes/index')
@@ -17,7 +18,7 @@ app.use("/static", express.static("src/static"));
 
 app.use(cors({
     credentials: true,
-    origin: 'http://localhost:5173/api' // Порт Vite/Vue приложения
+    origin: 'http://localhost:5173' // Порт Vite/Vue приложения
 }));
 
 // логирование для всех входящих запросов

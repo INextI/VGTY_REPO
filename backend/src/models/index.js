@@ -113,7 +113,7 @@ module.exports = {
     User,
     Student,
     Employee,
-    Department,
+    
     Group,
     Discipline, 
     EducationForm, 

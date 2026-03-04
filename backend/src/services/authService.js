@@ -13,7 +13,7 @@ class AuthService {
              const user = await User.findOne({
                 where: { login },
                 include: [{ model: Role, as: 'role' }]
-                });
+        });
 
             if (!user) {
                 console.warn('AuthService.login: Пользователь не найден', { login });
