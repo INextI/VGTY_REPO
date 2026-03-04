@@ -34,9 +34,18 @@ document.addEventListener('DOMContentLoaded', () => {
             // Сохраняем информацию о пользователе, чтобы использовать на других страницах (например, для отображения имени)
             localStorage.setItem('user', JSON.stringify(result.user));
 
+            const user = await userStore.login(login.value, password.value);
+ //Перенаправляем пользователя в зависимости от его роли, полученной от сервера.
+            if (user.role === 'admin') {
+                router.push('/admin');
+            } else if (user.role === 'teacher') {
+                router.push('/teacher-home');
+            } else {
+                router.push('/student-home');
+                }
 
             //Перенаправляем пользователя в зависимости от его роли, полученной от сервера.
-            switch (result.user.role) {
+           /* switch (result.user.role) {
                 case 'admin':
                     window.location.href = '/admin.html'; // Перенаправляем админа на его страницу
                     break;
@@ -50,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Если роль не определена, отправляем на главную или страницу входа
                     window.location.href = '/';
                     break;
-            }
+            }*/
 
         } catch (error) {
             console.error('Ошибка:', error);

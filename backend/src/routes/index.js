@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const authMiddleware = require('../middleware/authMiddleware')
+const checkRole = require('../middleware/checkRoles');
 
 const userRouter = require('./userRoute')
 const studentRouter = require('./studentRoute')
@@ -26,5 +27,19 @@ router.use('/educationForm', educationFormRouter)
 router.use('/eduProgramm', eduProgrammRouter)
 router.use('/faculty', facultyRouter)
 router.use('/group', groupRouter)
+
+
+
+// Только для админов
+router.use('/admin-only', authMiddleware, checkRole('admin'), userRouter);
+// router.beforeEach((to, from, next) => {
+//     const user = JSON.parse(localStorage.getItem('user'));
+    
+//     if (to.meta.role && user?.role !== to.meta.role) {
+//         return next('/login'); // Если роль не совпадает, отправляем на вход
+//     }
+//     next();
+// });
+
 
 module.exports = router
