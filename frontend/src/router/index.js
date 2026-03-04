@@ -7,7 +7,7 @@ const routes = [
     meta: { requiresAuth: false }
   },
   { 
-    path: '/login', 
+    path: '/auth/login', 
     component: () => import('@/views/LoginView.vue'),
     meta: { requiresAuth: false }
   },
@@ -73,21 +73,32 @@ const router = createRouter({
 // Глобальный guard
 import { useAuthStore } from '@/stores/authStore';
 
-// router.beforeEach((to, from, next) => {
-//   const authStore = useAuthStore();
-//   const token = localStorage.getItem('token');
-  
-//   if (to.meta.requiresAuth && !token) {
-//     return next('/login');
-//   }
-  
-//   if (to.meta.role && authStore.user?.role !== to.meta.role) {
-//     alert('Доступ запрещен');
-//     return next('/login');
-//   }
-  
-//   next();
-// });
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user')); // Берем напрямую для надежности
+
+  // Если страница требует авторизации, а токена нет
+  if (to.meta.requiresAuth && !token) {
+    return next('/api/auth/login');
+  }
+
+  // Если у страницы есть ограничение по роли
+  if (to.meta.role) {
+    const userRole = authStore.user?.role || user?.role;
+    
+    if (userRole !== to.meta.role) {
+      console.warn('Доступ запрещен: недостаточно прав');
+      return next('/api/auth/login'); 
+    }
+  }
+
+  next();
+});
+
 
 export default router;
+
+
 

@@ -7,6 +7,7 @@ const $api = axios.create({
 
 $api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
+    console.log('Request URL:', config.url); // 
     return config;
 });
 
@@ -19,7 +20,9 @@ $api.interceptors.response.use((config) => config, async (error) => {
             localStorage.setItem('token', response.data.accessToken);
             return $api.request(originalRequest);
         } catch (e) {
-            console.log('Пользователь не авторизован');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth/login';
         }
     }
     throw error;

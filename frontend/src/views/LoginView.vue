@@ -8,7 +8,7 @@
       <div class="lv-login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png" alt="ВГТУ" class="lv-logo">
         
-        <lv-form @submit.prevent="handleLogin">
+        <form @submit.prevent="handleLogin">
           <div class="lv-input-group">
             <input 
               v-model="login" 
@@ -41,7 +41,7 @@
           <div v-if="error" class="error-message">
             {{ error }}
           </div>
-        </lv-form>
+        </form>
       </div>
     </div>
     
@@ -73,22 +73,29 @@ const router = useRouter();
 const handleLogin = async () => {
   try {
     error.value = '';
-    const user = await auth.login(login.value, password.value);
+    console.log('Попытка входа...', login.value); // Для отладки
     
+    const user = await auth.login(login.value, password.value);
+    console.log('Данные пользователя получены:', user);
+
+    if (!user || !user.role) {
+      throw new Error('Роль пользователя не определена');
+    }
+
     // Редирект на основе роли
     if (user.role === 'admin') {
       router.push('/admin');
     } else if (user.role === 'student') {
       router.push('/student/home');
-    }
-      else if (user.role === 'teacher') {
+    } else if (user.role === 'teacher') {
       router.push('/teacher/home');
     } else {
       router.push('/');
     }
   } catch (err) {
-    error.value = err.message || 'Неверный логин или пароль';
-    console.error('Login error:', err);
+    
+    error.value = err.response?.data?.message || err.message || 'Ошибка сети или сервера';
+    console.error('Детали ошибки:', err.response?.data || err);
   }
 };
 </script>
@@ -134,7 +141,7 @@ const handleLogin = async () => {
 }
 
 /* ===== Form ===== */
-lv-form {
+form {
     width: 100%;
 }
 

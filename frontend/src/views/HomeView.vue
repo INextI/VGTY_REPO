@@ -5,7 +5,7 @@
     <div class="content">
       <img class="hm-logo" src="https://cchgeu.ru/local/templates/vstu/img/vstu-logo.svg?v2" alt="">
       <h1>Электронная информационно-образовательная среда <strong>ВГТУ</strong></h1>
-      <router-link to="/login" class="hm-button-link">Войти</router-link>
+      <router-link to="/auth/login" class="hm-button-link">Войти</router-link>
     </div>
   </div>
 </template>

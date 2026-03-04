@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
                 this.isAuth = false;
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                router.push('/login');
+                router.push('/auth/login');
             }
         }
     }

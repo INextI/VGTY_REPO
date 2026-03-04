@@ -3,10 +3,10 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware')
 
-router.post('/login', authController.login);
+router.post('/api/auth/login', authController.login);
 
-router.post('/logout', authMiddleware, authController.logout)
-router.get('/refresh', authMiddleware, authController.refresh)
+router.post('/api/auth/logout', authMiddleware, authController.logout)
+
 
 
 module.exports = router

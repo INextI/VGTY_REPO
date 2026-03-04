@@ -30,8 +30,9 @@ User.hasOne(Employee, { foreignKey: 'user_id', onDelete: 'CASCADE' })
 Employee.belongsTo(User, { foreignKey: 'user_id' })
 
 //User ↔ Role (Многие к одному)
-Role.hasMany(User, { foreignKey: 'role_id' })
-User.belongsTo(Role, { foreignKey: 'role_id' })
+User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
+Role.hasMany(User, { foreignKey: 'role_id' });
+
 
 // Связь "Один-ко-Многим": Faculty -> Employees
 Faculty.hasMany(Employee, { foreignKey: 'faculty_id' })
