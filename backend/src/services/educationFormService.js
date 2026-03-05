@@ -31,6 +31,7 @@ class EducationFormService {
     async getEducationFormByName(name) {
         const eduForm = await educationForm.findOne({where: {name}})
         if (!eduForm) throw new Error("Форма обучения не найдена")
+        return eduForm
     }
 }
 
