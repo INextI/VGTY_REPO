@@ -3,7 +3,7 @@ const {DataTypes} = require('sequelize')
 
 const Role = sequelize.define('role',{
     id: {type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4},
-    name: {type: DataTypes.STRING, allowNull: false} //Пока только три будет ENUM потом убрать
+    name: {type: DataTypes.STRING, allowNull: false, unique: true}
 }, {
     tableName: 'roles',
     timestamps: false
