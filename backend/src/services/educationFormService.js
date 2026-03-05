@@ -15,17 +15,22 @@ class EducationFormService {
 
     async updateEducationForm(id, data) {
         const eduForm = await educationForm.findByPk(id)
-        if (!eduForm) throw new Error("Направление не найдено")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
+        if (!eduForm) throw new Error("Форма обучения не найдена")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         return await educationForm.update(data)
     }
 
     async deleteEducationForm(id) {
         const eduForm = await educationForm.findByPk(id)
-        if (!eduForm) throw new Error("Направление не найдено")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
+        if (!eduForm) throw new Error("Форма обучения не найдена")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
         await eduForm.destroy()
         return { message: 'Удален'}
+    }
+
+    async getEducationFormByName(name) {
+        const eduForm = await educationForm.findOne({where: {name}})
+        if (!eduForm) throw new Error("Форма обучения не найдена")
     }
 }
 
