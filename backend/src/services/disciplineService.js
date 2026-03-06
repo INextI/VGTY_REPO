@@ -3,13 +3,13 @@ const path = require("path");
 
 const Discipline = require("../models/disciplineModel");
 const { DEFAULT_DISCIPLINE_IMAGE, STATIC_PATH } = require("../config/storage");
-const facultyService = require('./facultyServices');
+const groupService = require('./groupService');
 const educationFormService = require("./educationFormService");
 
 class DisciplineService {
 
     async createDiscipline(data, file) {
-        const faculty = await facultyService.getFacultyByName(data.faculty_name)
+        const group = await groupService.getGroupByName(data.group_name)
         const eduForm = await educationFormService.getEducationFormByName(data.education_form_name)
         const imageUrl = file
             ? `/static/img/discipline/${file.filename}`
@@ -20,9 +20,10 @@ class DisciplineService {
             owner_employee_id: data.owner_employee_id,
             description: data.description,
             image_url: imageUrl,
-            faculty_id: faculty.id,
             education_form_id: eduForm.id
         });
+
+        await discipline.addGroup(group.id)
 
         return discipline;
     }
