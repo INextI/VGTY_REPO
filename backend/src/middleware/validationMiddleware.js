@@ -2,6 +2,13 @@ const Joi = require('joi');
 
 const validate = (schema, property = 'body') => {
     return (req, res, next) => {
+
+        if (!schema) {
+            return res.status(500).json({
+                message: 'Validation schema not provided'
+            });
+        }
+
         const {error, value} = schema.validate(req[property], {
             abortEarly: false,
             stripUnknown: true
@@ -10,7 +17,7 @@ const validate = (schema, property = 'body') => {
         if (error) {
             return res.status(400).json({
                 message: 'Ошибка валидации',
-                erorrs: error.details.map(err => ({
+                errors: error.details.map(err => ({
                     field: err.path.join('.'),
                     message: err.message
                 }))
