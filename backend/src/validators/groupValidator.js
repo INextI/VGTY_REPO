@@ -14,7 +14,3 @@ exports.updateGroupSchema = Joi.object({
     curator_id: uuid.optional(),
     academic_year: Joi.number().integer().optional()
 }).min(1)
-
-exports.idParamSchema = Joi.object({
-    id: uuid.required()
-})

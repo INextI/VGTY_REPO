@@ -1,5 +1,9 @@
 const Joi = require('joi');
 
-exports.facultySchema = Joi.object({
-    name: Joi.string().min(2)
+exports.createFacultySchema = Joi.object({
+    name: Joi.string().min(2).required()
+})
+
+exports.updateFacultySchema = Joi.object({
+    name: Joi.string().min(2).required()
 })

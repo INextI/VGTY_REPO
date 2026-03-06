@@ -15,10 +15,6 @@ exports.updateUserSchema =Joi.object({
     role_id: uuid.optional()
 }).min(1)
 
-exports.idParamSchema = Joi.object({
-    id: uuid.required()
-})
-
 exports.createFullUserSchema = Joi.object({
     login: Joi.string().min(3).max(50).required(),
     password: Joi.string().min(6).max(50).required(),
@@ -30,21 +26,38 @@ exports.createFullUserSchema = Joi.object({
 
     birth_date: Joi.date().required(),
 
-    group_name: Joi.when('role', {
+    faculty: Joi.alternatives().try(
+        Joi.object({
+            id: uuid.required()
+        }),
+        Joi.object({
+            name: Joi.string().min(2).required()
+        })
+    ).required(),
+
+    group: Joi.when('role', {
         is: 'student',
-        then: Joi.string().required(),
+        then: Joi.alternatives().try(
+            Joi.object({
+                id: uuid.required()
+            }),
+            Joi.object({
+                name: Joi.string().min(2).required()
+            })
+        ).required(),
         otherwise: Joi.forbidden()
     }),
     
-    education_form_name: Joi.when('role', {
+    education_form: Joi.when('role', {
         is: 'student',
-        then: Joi.string().valid('full-time', 'correspondence').required(),
+        then: Joi.alternatives().try(
+            Joi.object({
+                id: uuid.required()
+            }),
+            Joi.object({
+                name: Joi.string().valid('full-time', 'correspondence').required(),
+            }),
+        ).required(),
         otherwise: Joi.forbidden()
     }),
-
-    faculty_name: Joi.when('employee', {
-        is: 'employee',
-        then: Joi.string().min(2),
-        otherwise: Joi.forbidden()
-    })
 })
