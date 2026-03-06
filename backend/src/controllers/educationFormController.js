@@ -4,7 +4,7 @@ class EducationFormController {
     async create(req, res, next) {
         try{
             const eduForm = await educationFormService.createEducationForm(req.body)
-            return res.status(201).json(faculty)
+            return res.status(201).json(eduForm)
         } catch (e) {
             next(e)
         }
@@ -12,8 +12,8 @@ class EducationFormController {
 
     async getAll(req,res, next) {
         try {
-            const eduForm = await educationFormService.getAllEducationForms()
-            return res.json(facultys)
+            const eduForms = await educationFormService.getAllEducationForms()
+            return res.json(eduForms)
         } catch (e) {
             next(e)
         }
@@ -22,7 +22,7 @@ class EducationFormController {
     async getOne(req, res, next) {
         try {
             const eduForm = await educationFormService.getEducationFormById(req.params.id)
-            return res.json(faculty)
+            return res.json(eduForm)
         } catch (e) {
             next(e)
         }
@@ -40,7 +40,7 @@ class EducationFormController {
     async delete(req, res, next) {
         try {
             const eduForm = await educationFormService.deleteEducationForm(req.params.id)
-            return res.json(result)
+            return res.json(eduForm)
         } catch (e) {
             next(e)
         }
