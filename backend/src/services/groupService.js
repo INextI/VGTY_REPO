@@ -34,6 +34,10 @@ class GroupService {
         await group.destroy()
         return { message: 'Удален'}
     }
+
+    async getGroupByName(name) {
+        return await Group.findOne({where: {name}})
+    }
 }
 
 module.exports = new GroupService()
