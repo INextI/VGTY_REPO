@@ -5,9 +5,9 @@ const educationalFormService = require('./educationFormService')
 class EduProgrammService {
     async createEduProgramm(data) {
         const faculty = await facultyService.getFacultyByName(data.faculty)
-        facultyId = faculty.id
+        const facultyId = faculty.id
         const eduForm = await educationalFormService.getEducationFormByName(data.education_form)
-        educationFormId = eduForm.id
+        const educationFormId = eduForm.id
         return await eduProgramm.create({
             name: data.name,
             faculty_id: facultyId,
