@@ -7,9 +7,10 @@ const validate = require('../middleware/validationMiddleware')
 const {
     createUserSchema,
     updateUserSchema,
-    idParamSchema,
     createFullUserSchema
 } = require('../validators/userValidator')
+
+const {idParamSchema} = require('../validators/common/idParamSchema')
 
 router.post('/', validate(createUserSchema), userController.create)
 router.get('/', userController.getAll)
