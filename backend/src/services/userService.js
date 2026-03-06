@@ -57,17 +57,38 @@ class UserService {
                 role_id: role.id,
             }, { transaction: t });
 
+            let faculty
+
+            if (data.faculty.id) {
+                faculty = await facultyService.getFacultyById(data.faculty.id)
+            }
+            if (data.faculty.name) {
+                faculty = await facultyService.getFacultyByName(data.faculty.name)
+            }
 
             // Если это студент
             if (role.name === 'student') {
-                const group = await groupService.getGroupByName(group_name)
-                const eduForm = await educationFormService.getEducationFormByName(education_form_name)
+                let group
+                if (data.group.id) {
+                    group = await groupService.getGroupById(data.group.id)
+                }
+                if (data.group.name) {
+                    group = await groupService.getGroupByName(data.group.name)
+                }
+                let eduForm
+                if (data.education_form.id) {
+                    eduForm = await educationFormService.getEducationFormById(data.education_form.id)
+                }
+                if (data.education_form.name) {
+                    eduForm = await educationFormService.getEducationFormByName(data.education_form.name)
+                }
                 await Student.create({
                     user_id: user.id,
                     first_name: data.first_name,
                     last_name: data.last_name,
                     patronymic: data.patronymic,
                     birth_date: data.birth_date,
+                    faculty_id: faculty.id,
                     group_id: group.id,
                     education_form_id: eduForm.id
                 }, { transaction: t });
@@ -75,7 +96,6 @@ class UserService {
 
             // Если это сотрудник
             if (role.name === 'employee') {
-                const faculty = await facultyService.getFacultyByName(faculty_name)
                 await Employee.create({
                     user_id: user.id,
                     first_name: data.first_name,
