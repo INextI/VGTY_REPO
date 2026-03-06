@@ -3,23 +3,31 @@ const path = require("path");
 
 const Discipline = require("../models/disciplineModel");
 const { DEFAULT_DISCIPLINE_IMAGE, STATIC_PATH } = require("../config/storage");
+const facultyService = require('./facultyServices');
+const educationFormService = require("./educationFormService");
 
 class DisciplineService {
 
-    async create(data, file) {
+    async createDiscipline(data, file) {
+        const faculty = await facultyService.getFacultyByName(data.faculty_name)
+        const eduForm = await educationFormService.getEducationFormByName(data.education_form_name)
         const imageUrl = file
             ? `/static/img/discipline/${file.filename}`
             : DEFAULT_DISCIPLINE_IMAGE;
 
         const discipline = await Discipline.create({
-            ...data,
-            image_url: imageUrl
+            name: data.name,
+            owner_employee_id: data.owner_employee_id,
+            description: data.description,
+            image_url: imageUrl,
+            faculty_id: faculty.id,
+            education_form_id: eduForm.id
         });
 
         return discipline;
     }
 
-    async getById(id) {
+    async getDisciplineById(id) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -29,11 +37,11 @@ class DisciplineService {
         return discipline;
     }
 
-    async getAll() {
+    async getAllDisciplines() {
         return await Discipline.findAll();
     }
 
-    async update(id, data, file) {
+    async updateDiscipline(id, data, file) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -47,7 +55,7 @@ class DisciplineService {
 
             // Удаляем старую если она не дефолтная
             if (discipline.image_url &&
-                discipline.image_url !== DEFAULT_IMAGE) {
+                discipline.image_url !== DEFAULT_DISCIPLINE_IMAGE) {
 
                 const oldImagePath = path.join(
                     STATIC_PATH,
@@ -70,7 +78,7 @@ class DisciplineService {
         return discipline;
     }
 
-    async delete(id) {
+    async deleteDiscipline(id) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -98,62 +106,3 @@ class DisciplineService {
 }
 
 module.exports = new DisciplineService();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-const Discipline = require('../models/disciplineModel')
-
-class DisciplineService {
-    async createDiscipline(data) {
-        return await Discipline.create(data)
-    }
-
-    async getAllDisciplines() {
-        return await Discipline.findAll()
-    }
-
-    async getDisciplineById(id) {
-        return await Discipline.findByPk(id)
-    }
-
-    async updateDiscipline(id, data) {
-        const discipline = await Discipline.findByPk(id)
-        if (!discipline) throw new Error("Курс не найден")
-
-        return await discipline.update(data)
-    }
-
-    async deleteDiscipline(id) {
-        const discipline = await Discipline.findByPk(id)
-        if (!discipline) throw new Error("Курс не найден")
-        await discipline.destroy()
-        return { message: 'Удалено'}
-    }
-
-    async getDisciplineByName(name) {
-        const discipline = await Discipline.findOne({where: {name}})
-        if (!discipline) throw new Error("Курс с таким именем не найден")
-        return discipline
-    }
-}
-
-module.exports = new DisciplineService()
-*/
