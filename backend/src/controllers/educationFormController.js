@@ -31,7 +31,7 @@ class EducationFormController {
     async update(req, res, next) {
         try {
             const eduForm = await educationFormService.updateEducationForm(req.params.id, req.body)
-            return res.json(faculty)
+            return res.json(eduForm)
         } catch (e) {
             next(e)
         }
