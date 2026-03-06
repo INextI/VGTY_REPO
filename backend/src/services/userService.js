@@ -6,13 +6,20 @@ const Employee = require('../models/employeeModel');
 
 const authService = require('./authService')
 const roleService = require('./roleService')
-
-
+const groupService = require('./groupService')
+const educationFormService = require('./educationFormService')
+const facultyService = require('./facultyServices')
 
 
 class UserService {
     async createUser(data) {
-        return await User.create(data)
+        const passwordHash = await authService.hashPassword(data.password)
+        const role = await roleService.getRoleByName(data.role_name)
+        return await User.create({
+            login: data.login,
+            password_hash: passwordHash,
+            role_id: role.id
+        })
     }
 
     async getAllUsers() {
@@ -50,30 +57,32 @@ class UserService {
                 role_id: role.id,
             }, { transaction: t });
 
+
             // Если это студент
             if (role.name === 'student') {
+                const group = await groupService.getGroupByName(group_name)
+                const eduForm = await educationFormService.getEducationFormByName(education_form_name)
                 await Student.create({
                     user_id: user.id,
                     first_name: data.first_name,
                     last_name: data.last_name,
                     patronymic: data.patronymic,
                     birth_date: data.birth_date,
-                    group_id: data.group_id,
-                    education_form_id: data.education_form_id
+                    group_id: group.id,
+                    education_form_id: eduForm.id
                 }, { transaction: t });
             }
 
             // Если это сотрудник
             if (role.name === 'employee') {
+                const faculty = await facultyService.getFacultyByName(faculty_name)
                 await Employee.create({
                     user_id: user.id,
                     first_name: data.first_name,
                     last_name: data.last_name,
                     patronymic: data.patronymic,
                     birth_date: data.birth_date,
-                    role_id: data.role_id,
-                    department_id: data.department_id,
-                    grade_id: data.grade_id
+                    faculty_id: faculty.id,
                 }, { transaction: t });
             }
 

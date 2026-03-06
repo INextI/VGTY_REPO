@@ -2,7 +2,17 @@ const educationForm = require('../models/educationFormModel')
 
 class EducationFormService {
     async createEducationForm(data) {
-        return await educationForm.create(data)
+        const existing = await educationForm.findOne({
+            where: { name: data.name }
+        })
+
+        if (existing) {
+            throw new Error("Такая форма обучения уже существует")
+        }
+
+        return await educationForm.create({
+            name: data.name
+        })
     }
 
     async getAllEducationForms() {
@@ -17,7 +27,8 @@ class EducationFormService {
         const eduForm = await educationForm.findByPk(id)
         if (!eduForm) throw new Error("Форма обучения не найдена")    // НАПИСАТЬ ПОТОМ ОШИБКУ ОТДЕЛЬНО
 
-        return await educationForm.update(data)
+        await eduForm.update(data)
+        return eduForm
     }
 
     async deleteEducationForm(id) {
