@@ -7,8 +7,8 @@ const Discipline = sequelize.define('discipline',{
     owner_employee_id: {type: DataTypes.UUID},
     description: {type: DataTypes.TEXT},
     image_url: {type: DataTypes.STRING},
-    department_id: {type: DataTypes.UUID},
-    education_form_id: {type: DataTypes.UUID}
+    faculty_id: {type: DataTypes.UUID, allowNull: false},
+    education_form_id: {type: DataTypes.UUID, allowNull: false}
 },{
     tableName: 'disciplines',
     timestamps: true,
