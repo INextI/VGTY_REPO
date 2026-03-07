@@ -3,12 +3,15 @@ const bcrypt = require('bcrypt');
 const User = require('../models/userModel');
 const Student = require('../models/studentModel');
 const Employee = require('../models/employeeModel');
+const Role = require('../models/roleModel')
 
 const authService = require('./authService')
 const roleService = require('./roleService')
 const groupService = require('./groupService')
 const educationFormService = require('./educationFormService')
 const facultyService = require('./facultyServices')
+const studentService = require('./studentService')
+const employeeService = require('./employeeService')
 
 
 class UserService {
@@ -108,6 +111,35 @@ class UserService {
 
             return user;
         });
+    }
+
+    async getUserDisciplines(userId, pagination) {
+
+        const user = await User.findByPk(userId, {
+            include: {
+                model: Role,
+                as: "role"
+            }
+        });
+
+        if (!user) {
+            throw new Error("Пользователь не найден");
+        }
+
+        const role = user.role.name;
+
+        if (role === "student") {
+            return studentService.getStudentDisciplines(userId, pagination);
+        }
+
+        if (role === "employee") {
+            return employeeService.getEmployeeDisciplines(userId, pagination);
+        }
+
+        if (role === "admin") {
+            throw new Error("Администратор не привязан к дисциплинам");
+        }
+
     }
 }
 

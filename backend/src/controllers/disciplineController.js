@@ -1,4 +1,5 @@
 const disciplineService = require("../services/disciplineService");
+const userService = require('../services/userService')
 
 class DisciplineController {
 
@@ -88,6 +89,22 @@ class DisciplineController {
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
+    }
+
+    async getMyDisciplines(req, res, next) {
+
+        try {
+            const result = await userService.getUserDisciplines(
+                req.user.id,
+                req.query
+            );
+
+            res.json(result);
+
+        } catch (e) {
+            next(e);
+        }
+
     }
 }
 

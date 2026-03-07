@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const Discipline = require("../models/disciplineModel");
+const { Student, Group, Discipline } = require('../models/index');
 const { DEFAULT_DISCIPLINE_IMAGE, STATIC_PATH } = require("../config/storage");
 const groupService = require('./groupService');
 const educationFormService = require("./educationFormService");
@@ -103,6 +103,60 @@ class DisciplineService {
         await discipline.destroy();
 
         return { message: "Курс удален успешно" };
+    }
+
+    async getDisciplineByGroup(groupId, pagination) {
+        const { page, limit} = pagination;
+        const pageNum = Number(page) || 1;
+        const limitNum = Number(limit) || 10;
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const {rows, count} = await Discipline.findAndCountAll({
+            include: {
+                model: Group,
+                where: {id: groupId},
+                attributes: []
+            },
+            limit,
+            offset,
+        });
+
+        return {
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                pages: Math.ceil(count/limit)
+            }
+        };
+    }
+
+    async getDisciplineByEmployee(employeeId, pagination) {
+        const {page, limit} = pagination;
+        const pageNum = Number(page) || 1;
+        const limitNum = Number(limit) || 10;
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const {rows, count} = await Discipline.findAndCountAll({
+            where: {
+                owner_employee_id: employeeId
+            },
+            limit,
+            offset
+        });
+
+        return {
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                pages: Math.ceil(count/limit)
+            }
+        }
     }
 }
 

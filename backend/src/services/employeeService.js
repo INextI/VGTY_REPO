@@ -1,4 +1,6 @@
 const Employee = require('../models/employeeModel')
+const disciplineService = require('./disciplineService')
+
 
 class EmployeeService {
     async createEmployee(data) {
@@ -26,6 +28,24 @@ class EmployeeService {
 
         await user.destroy()
         return { message: 'Удален'}
+    }
+
+    async getEmployeeByUserId(userId) {
+        const employee = await Employee.findOne({where: {user_id: userId}})
+        if (!employee) {
+            throw new Error('Сотрудник не найден')
+        }
+        return employee;
+
+    }
+
+    async getEmployeeDiscipline(userId, pagination) {
+        const employee = await this.getEmployeeByUserId(userId);
+
+        return disciplineService.getDisciplineByEmployee(
+            employee.id,
+            pagination
+        )
     }
 }
 

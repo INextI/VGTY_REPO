@@ -1,5 +1,7 @@
 const Student = require('../models/studentModel')
 
+const disciplineService = require('./disciplineService');
+
 class StudentService {
     async createStudent(data) {
         return await Student.create(data)
@@ -26,6 +28,24 @@ class StudentService {
 
         await user.destroy()
         return { message: 'Удален'}
+    }
+
+    async getStudentByUserId(userId) {
+        const student = await Student.findOne({
+            where: {user_id: userId}
+        });
+
+        if (!student) {
+            throw new Error("Студент не найден")
+        }
+
+        return student;
+    }
+
+    async getStudentDisciplines(userId, pagination) {
+        const student = await this.getStudentByUserId(userId);
+
+        return disciplineService.getDisciplineByGroup( student.group_id, pagination);
     }
 }
 
