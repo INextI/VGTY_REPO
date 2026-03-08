@@ -18,7 +18,7 @@ const start = async () => {
 
     const app = require('./app')
     await sequelize.authenticate()
-    await sequelize.sync()
+    await sequelize.sync() // {forse: true} для пересоздания
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
       console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);

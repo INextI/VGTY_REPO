@@ -113,9 +113,12 @@ module.exports = {
     User,
     Student,
     Employee,
-    
     Group,
     Discipline, 
     EducationForm, 
     EduProgramm,
+    Token,
+    Role,
+    AcademicYear,
+    Faculty
 };
