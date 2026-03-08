@@ -12,9 +12,12 @@ const EduProgramm = require('./eduProgrammModel')
 const Token = require('./tokenModel');
 const Role = require('./roleModel')
 const AcademicYear = require('./academicYearModel')
+const Department = require('./departmentsModel')
 const Faculty = require('./facultyModel')
-
-
+const DocumentType = require('./documentTypes')
+const DocumentEditJob = require('./documentEditJobs')
+const DocumentEditJobLog = require('./documentEditJobLogs')
+const DocumentAttachment = require('./documentAttachments')
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
 const DisciplineEmployee = require('./disciplineEmployeeModel')
@@ -109,6 +112,92 @@ Employee.belongsToMany(Discipline, {
    as: 'connected_disciplines'
 })
 
+// Связи для DocumentEditJob
+DocumentEditJob.belongsTo(Employee, {
+    foreignKey: 'created_by_employee_id',
+    as: 'createdBy'
+})
+
+Employee.hasMany(DocumentEditJob, {
+    foreignKey: 'created_by_employee_id',
+    as: 'documentEditJobs'
+})
+
+// Связи для DocumentEditJobLog
+DocumentEditJobLog.belongsTo(DocumentEditJob, {
+    foreignKey: 'job_id',
+    as: 'job'
+})
+
+DocumentEditJob.hasMany(DocumentEditJobLog, {
+    foreignKey: 'job_id',
+    as: 'logs'
+})
+
+DocumentEditJobLog.belongsTo(DocumentAttachment, {
+    foreignKey: 'document_attachment_id',
+    as: 'document'
+})
+
+DocumentAttachment.hasMany(DocumentEditJobLog, {
+    foreignKey: 'document_attachment_id',
+    as: 'editLogs'
+})
+
+// Связи для DocumentAttachment
+DocumentAttachment.belongsTo(DocumentType, {
+    foreignKey: 'type_id',
+    as: 'documentType'
+})
+
+DocumentType.hasMany(DocumentAttachment, {
+    foreignKey: 'type_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(Department, {
+    foreignKey: 'department_id',
+    as: 'department'
+})
+
+Department.hasMany(DocumentAttachment, {
+    foreignKey: 'department_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(Discipline, {
+    foreignKey: 'discipline_id',
+    as: 'discipline'
+})
+
+Discipline.hasMany(DocumentAttachment, {
+    foreignKey: 'discipline_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(EduProgramm, {
+    foreignKey: 'edu_program_id',
+    as: 'eduProgram'
+})
+
+EduProgramm.hasMany(DocumentAttachment, {
+    foreignKey: 'edu_program_id',
+    as: 'attachments'
+})
+
+// DocumentAttachment.belongsTo(Session, {
+//     foreignKey: 'session_id',
+//     as: 'session'
+// })
+
+// Session.hasMany(DocumentAttachment, {
+//     foreignKey: 'session_id',
+//     as: 'attachments'
+// })
+
+
+
+
 module.exports = {
     User,
     Student,
@@ -118,4 +207,10 @@ module.exports = {
     Discipline, 
     EducationForm, 
     EduProgramm,
+
+   DocumentType,
+    DocumentEditJob,
+    DocumentEditJobLog,
+    DocumentAttachment,
+    Department
 };

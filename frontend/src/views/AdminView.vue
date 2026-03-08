@@ -37,6 +37,7 @@
       <ul class="dashboard-list">
         <li><router-link class="dashboard-link" to="/admin/create-user">Создание пользователя</router-link></li>
         <li><router-link class="dashboard-link" to="/admin/users">Список пользователей</router-link></li>
+        <li><router-link class="dashboard-link" to="/admin/documentUpdate">Редактировать документы</router-link></li>
       </ul>
     </div>
   </main>
