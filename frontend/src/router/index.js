@@ -31,6 +31,12 @@ const routes = [
     component: () => import('@/views/DocumentBatchEditorView.vue'),
     meta: { requiresAuth: true, role: 'admin' } 
   },
+{ 
+    path: '/admin/uploadDocument', 
+    component: () => import('@/views/DocumentUploadView.vue'),
+    meta: { requiresAuth: true, role: 'admin' } 
+  },
+
   { 
     path: '/student/home', 
     component: () => import('@/views/HomeStudentView.vue'),

@@ -14,6 +14,7 @@ const Role = require('./roleModel')
 const AcademicYear = require('./academicYearModel')
 const Department = require('./departmentsModel')
 const Faculty = require('./facultyModel')
+const ContactDataTypes = require('./contactDataTypesModel')
 const DocumentType = require('./documentTypes')
 const DocumentEditJob = require('./documentEditJobs')
 const DocumentEditJobLog = require('./documentEditJobLogs')
@@ -21,6 +22,14 @@ const DocumentAttachment = require('./documentAttachments')
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
 const DisciplineEmployee = require('./disciplineEmployeeModel')
+
+const Session = require('./sessionsModel')
+const CompletedSession = require('./completedSessionModel')
+const ContactData = require('./contactDataModel')
+
+const EmployeeGrades = require('./employeeGradesModel')
+const Positions = require('./positionsModel')
+
 
 //связи
 
@@ -185,18 +194,87 @@ EduProgramm.hasMany(DocumentAttachment, {
     as: 'attachments'
 })
 
-// DocumentAttachment.belongsTo(Session, {
-//     foreignKey: 'session_id',
-//     as: 'session'
-// })
+DocumentAttachment.belongsTo(Session, {
+    foreignKey: 'session_id',
+    as: 'session'
+})
 
-// Session.hasMany(DocumentAttachment, {
-//     foreignKey: 'session_id',
-//     as: 'attachments'
-// })
+Session.hasMany(DocumentAttachment, {
+    foreignKey: 'session_id',
+    as: 'attachments'
+})
 
 
+/**
+ * Определение связей для модели Session
+ */
+Session.associate = (models) => {
+    Session.belongsTo(models.Discipline, {
+        foreignKey: 'discipline_id',
+        as: 'discipline'
+    });
+    
+    Session.belongsTo(models.Employee, {
+        foreignKey: 'teacher_id',
+        as: 'teacher'
+    });
+    
+    Session.hasMany(models.CompletedSession, {
+        foreignKey: 'session_id',
+        as: 'completedSessions'
+    });
+    
+    Session.belongsToMany(models.Student, {
+        through: models.CompletedSession,
+        foreignKey: 'session_id',
+        otherKey: 'student_id',
+        as: 'students'
+    });
+};
 
+/**
+ * Определение связей для модели CompletedSession
+ */
+CompletedSession.associate = (models) => {
+    CompletedSession.belongsTo(models.Student, {
+        foreignKey: 'student_id',
+        as: 'student'
+    });
+    
+    CompletedSession.belongsTo(models.Session, {
+        foreignKey: 'session_id',
+        as: 'session'
+    });
+};
+
+/**
+ * Определение связей для модели ContactData
+ */
+ContactData.associate = (models) => {
+    ContactData.belongsTo(models.ContactDataTypes, {
+        foreignKey: 'type_id',
+        as: 'contactType'
+    });
+    
+    // Полиморфные связи
+    ContactData.belongsTo(models.Student, {
+        foreignKey: 'person_id',
+        constraints: false,
+        scope: {
+            person_type: 'student'
+        },
+        as: 'studentContact'
+    });
+    
+    ContactData.belongsTo(models.Employee, {
+        foreignKey: 'person_id',
+        constraints: false,
+        scope: {
+            person_type: 'employee'
+        },
+        as: 'employeeContact'
+    });
+};
 
 module.exports = {
     User,
@@ -212,5 +290,11 @@ module.exports = {
     DocumentEditJob,
     DocumentEditJobLog,
     DocumentAttachment,
-    Department
+    Department,
+    ContactDataTypes,
+    Session,
+    CompletedSession,
+    ContactData,
+    EmployeeGrades , 
+    Positions
 };

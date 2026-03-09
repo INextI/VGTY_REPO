@@ -1,5 +1,38 @@
 // frontend/src/views/DocumentBatchEditorView.vue 
 <template>
+<header>
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <router-link to="/student/home">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+                alt="ВГТУ" width="24" height="34">
+            </router-link>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="icon" title="Поиск" @click="toggleSearch">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="icon" title="Уведомления" @click="toggleNotifications">
+            <i class="fas fa-bell"></i>
+            <span v-if="unreadNotifications > 0" class="notification-badge">
+              {{ unreadNotifications }}
+            </span>
+          </button>
+          <button class="icon" title="Чат" @click="openChat">
+            <i class="fas fa-comments"></i>
+          </button>
+          <div class="user-info">
+            <span>{{ userName }}</span>
+            <router-link to="/student/profile" class="user-avatar">
+              <i class="fas fa-user"></i>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </header>
+
   <div class="main-content">
     <div class="panel">
       <h2 class="panel-title">Массовое редактирование документов</h2>
