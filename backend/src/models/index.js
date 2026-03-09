@@ -24,7 +24,7 @@ const GroupDiscipline = require('./groupDisciplineModel');
 const DisciplineEmployee = require('./disciplineEmployeeModel')
 
 const Session = require('./sessionsModel')
-const CompletedSession = require('./completedSessionModel')
+const CompletedSession = require('./completedSessionsModel')
 const ContactData = require('./contactDataModel')
 
 const EmployeeGrades = require('./employeeGradesModel')

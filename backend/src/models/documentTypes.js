@@ -10,3 +10,4 @@ const DocumentType = sequelize.define('DocumentType', {
 })
 
 module.exports = DocumentType
+

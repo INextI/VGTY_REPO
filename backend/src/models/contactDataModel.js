@@ -1,3 +1,6 @@
+const sequelize = require('../config/db')
+const {DataTypes, UUIDV4} = require('sequelize')
+
 const ContactData = sequelize.define('ContactData', {
     id: {
         type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4
@@ -40,3 +43,5 @@ const ContactData = sequelize.define('ContactData', {
         }
     ]
 });
+
+module.exports = ContactData

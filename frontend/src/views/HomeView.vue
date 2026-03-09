@@ -119,12 +119,16 @@ button a {
 
     cursor: pointer;
     transition: background 0.2s ease, transform 0.15s ease;
+
+    color: #fff;
 }
 
 .hm-button-link:hover {
     background: #4C2CB8;
     transform: translateY(-3px);
+    color: #fff;
 }
+
 
 /* ===== Adaptive ===== */
 @media (max-width: 1366px) {

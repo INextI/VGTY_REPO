@@ -16,6 +16,18 @@ const eduProgrammRouter = require('./eduProgrammRoute')
 const facultyRouter = require('./facultyRoute')
 const groupRouter = require('./groupRoute')
 
+const sessionRoutes = require('./sessionRoutes');
+const positionsRoutes = require('./positionsRoutes');
+const contactDataTypesRoutes = require('./contactDataTypesRoutes');
+const contactDataRoutes = require('./contactDataRoutes');
+const departmentRoutes = require('./departmentRoutes');
+const disciplineEmployeeRoutes = require('./disciplineEmployeeRoutes');
+const documentAttachmentRoutes = require('./documentAttachmentRoutes');
+const documentEditJobLogRoutes = require('./documentEditJobLogRoutes');
+const documentEditJobRoutes = require('./documentEditJobRoutes');
+const documentTypeRoutes = require('./documentTypeRoutes');
+
+
 router.use('/user', userRouter)
 router.use('/student', authMiddleware, studentRouter)
 router.use('/employee', authMiddleware, employeeRouter)
@@ -28,7 +40,16 @@ router.use('/eduProgramm', eduProgrammRouter)
 router.use('/faculty', facultyRouter)
 router.use('/group', groupRouter)
 
-
+router.use('/session', sessionRoutes)
+router.use('/positions', positionsRoutes)
+router.use('/contactDataTypes', contactDataTypesRoutes)
+router.use('/contactData', contactDataRoutes)
+router.use('/department', departmentRoutes)
+router.use('/disciplineEmployee', disciplineEmployeeRoutes)
+router.use('/documentAttachment', documentAttachmentRoutes)
+router.use('/documentEditJobLog', documentEditJobLogRoutes)
+router.use('/documentEditJob', documentEditJobRoutes)
+router.use('/documentType', documentTypeRoutes)
 
 // Только для админов
 router.use('/admin-only', authMiddleware, checkRole('admin'), userRouter);

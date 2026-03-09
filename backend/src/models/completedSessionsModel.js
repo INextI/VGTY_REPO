@@ -56,3 +56,5 @@ const CompletedSession = sequelize.define('CompletedSession', {
         }
     ]
 });
+
+module.exports = CompletedSession
