@@ -20,6 +20,13 @@ class AcademicYearService {
         await academicYear.destroy()
         return { message: 'Удален'}
     }
+
+    async getAcademicYearByValue(year) {
+        const academicYear = await AcademicYear.findOne({where: {course_year: year}})
+        if (!academicYear) throw new Error("Год не найден")
+
+        return academicYear
+    }
 }
 
 module.exports = new AcademicYearService()

@@ -27,6 +27,12 @@ class FacultyService {
         await faculty.destroy()
         return { message: 'Удален'}
     }
+
+    async getFacultyByName(name) {
+        const faculty = await Faculty.findOne({where: {name}})
+        if (!faculty) throw new Error("Факультет не найден") 
+        return faculty
+    }
 }
 
 module.exports = new FacultyService()

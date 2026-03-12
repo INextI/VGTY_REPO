@@ -1,8 +1,15 @@
 const Group = require('../models/groupModel')
+const academicYearService = require('./academicYearService')
 
 class GroupService {
     async createGroup(data) {
-        return await Group.create(data)
+        const academYear = await academicYearService.getAcademicYearByValue(data.academic_year)
+        return await Group.create({
+            name: data.name,
+            edu_program_id: data.edu_program_id,
+            curator_id: data.curator_id || null,
+            academic_year_id: academYear.id
+        })
     }
 
     async getAllGroups() {
@@ -26,6 +33,10 @@ class GroupService {
 
         await group.destroy()
         return { message: 'Удален'}
+    }
+
+    async getGroupByName(name) {
+        return await Group.findOne({where: {name}})
     }
 }
 

@@ -79,11 +79,11 @@ EduProgramm.belongsTo(FacultyModel, { foreignKey: 'faculty_id' })
 EducationForm.hasMany(EduProgramm, { foreignKey: 'education_form_id' })
 EduProgramm.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
 
-/*
+
 // Связь "Один-к-Одному": Discipline ↔ EducationForm
 EducationForm.hasMany(Discipline, { foreignKey: 'education_form_id' })
 Discipline.belongsTo(EducationForm, { foreignKey: 'education_form_id' })
-*/
+
 
 // Связь "Один-к-Одному": User ↔ Token
 User.hasOne(Token, {foreignKey: 'user_id', onDelete: 'CASCADE'})

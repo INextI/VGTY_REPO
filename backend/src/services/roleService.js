@@ -2,6 +2,11 @@ const Role = require('../models/roleModel')
 
 class RoleService {
     async createRole(data) {
+        const exesting = await Role.findOne({where: {name: data.name}})
+        
+        if (exesting) {
+            throw new Error("Роль уже существует")
+        }
         return await Role.create(data)
     }
 

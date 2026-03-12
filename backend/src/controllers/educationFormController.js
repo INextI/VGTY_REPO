@@ -12,8 +12,8 @@ class EducationFormController {
 
     async getAll(req,res, next) {
         try {
-            const eduForm = await educationFormService.getAllEducationForms()
-            return res.json(eduForm)
+            const eduForms = await educationFormService.getAllEducationForms()
+            return res.json(eduForms)
         } catch (e) {
             next(e)
         }

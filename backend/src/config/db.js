@@ -1,3 +1,4 @@
+require('dotenv').config();
 // Отладочный вывод
 console.log('=== DB CONFIG ===');
 console.log('DB_NAME:', process.env.DB_NAME);
@@ -10,7 +11,7 @@ console.log('=================');
 // Проверяем, что пароль строка
 const password = process.env.DB_PASSWORD ? String(process.env.DB_PASSWORD) : '';
 const { Sequelize } = require('sequelize');
-require('dotenv').config();
+
 
 module.exports = new Sequelize(
     process.env.DB_NAME,

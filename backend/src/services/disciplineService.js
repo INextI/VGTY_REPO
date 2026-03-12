@@ -1,25 +1,34 @@
 const fs = require("fs");
 const path = require("path");
 
-const Discipline = require("../models/disciplineModel");
+const { Student, Group, Discipline } = require('../models/index');
 const { DEFAULT_DISCIPLINE_IMAGE, STATIC_PATH } = require("../config/storage");
+const groupService = require('./groupService');
+const educationFormService = require("./educationFormService");
 
 class DisciplineService {
 
-    async create(data, file) {
+    async createDiscipline(data, file) {
+        const group = await groupService.getGroupByName(data.group_name)
+        const eduForm = await educationFormService.getEducationFormByName(data.education_form_name)
         const imageUrl = file
             ? `/static/img/discipline/${file.filename}`
             : DEFAULT_DISCIPLINE_IMAGE;
 
         const discipline = await Discipline.create({
-            ...data,
-            image_url: imageUrl
+            name: data.name,
+            owner_employee_id: data.owner_employee_id,
+            description: data.description,
+            image_url: imageUrl,
+            education_form_id: eduForm.id
         });
+
+        await discipline.addGroup(group.id)
 
         return discipline;
     }
 
-    async getById(id) {
+    async getDisciplineById(id) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -29,11 +38,11 @@ class DisciplineService {
         return discipline;
     }
 
-    async getAll() {
+    async getAllDisciplines() {
         return await Discipline.findAll();
     }
 
-    async update(id, data, file) {
+    async updateDiscipline(id, data, file) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -47,7 +56,7 @@ class DisciplineService {
 
             // Удаляем старую если она не дефолтная
             if (discipline.image_url &&
-                discipline.image_url !== DEFAULT_IMAGE) {
+                discipline.image_url !== DEFAULT_DISCIPLINE_IMAGE) {
 
                 const oldImagePath = path.join(
                     STATIC_PATH,
@@ -70,7 +79,7 @@ class DisciplineService {
         return discipline;
     }
 
-    async delete(id) {
+    async deleteDiscipline(id) {
         const discipline = await Discipline.findByPk(id);
 
         if (!discipline) {
@@ -95,65 +104,60 @@ class DisciplineService {
 
         return { message: "Курс удален успешно" };
     }
+
+    async getDisciplineByGroup(groupId, pagination) {
+        const { page, limit} = pagination;
+        const pageNum = Number(page) || 1;
+        const limitNum = Number(limit) || 10;
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const {rows, count} = await Discipline.findAndCountAll({
+            include: {
+                model: Group,
+                where: {id: groupId},
+                attributes: []
+            },
+            limit,
+            offset,
+        });
+
+        return {
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                pages: Math.ceil(count/limit)
+            }
+        };
+    }
+
+    async getDisciplineByEmployee(employeeId, pagination) {
+        const {page, limit} = pagination;
+        const pageNum = Number(page) || 1;
+        const limitNum = Number(limit) || 10;
+
+        const offset = (pageNum - 1) * limitNum;
+
+        const {rows, count} = await Discipline.findAndCountAll({
+            where: {
+                owner_employee_id: employeeId
+            },
+            limit,
+            offset
+        });
+
+        return {
+            data: rows,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                pages: Math.ceil(count/limit)
+            }
+        }
+    }
 }
 
 module.exports = new DisciplineService();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-const Discipline = require('../models/disciplineModel')
-
-class DisciplineService {
-    async createDiscipline(data) {
-        return await Discipline.create(data)
-    }
-
-    async getAllDisciplines() {
-        return await Discipline.findAll()
-    }
-
-    async getDisciplineById(id) {
-        return await Discipline.findByPk(id)
-    }
-
-    async updateDiscipline(id, data) {
-        const discipline = await Discipline.findByPk(id)
-        if (!discipline) throw new Error("Курс не найден")
-
-        return await discipline.update(data)
-    }
-
-    async deleteDiscipline(id) {
-        const discipline = await Discipline.findByPk(id)
-        if (!discipline) throw new Error("Курс не найден")
-        await discipline.destroy()
-        return { message: 'Удалено'}
-    }
-
-    async getDisciplineByName(name) {
-        const discipline = await Discipline.findOne({where: {name}})
-        if (!discipline) throw new Error("Курс с таким именем не найден")
-        return discipline
-    }
-}
-
-module.exports = new DisciplineService()
-*/
