@@ -4,6 +4,12 @@ const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware')
 const checkRole = require('../middleware/checkRoles');
 
+const { upload } = require('../middleware/formDataLogger.js');
+
+
+const documentAttachmentController = require('../controllers/documentAttachmentController');
+
+
 const userRouter = require('./userRoute')
 const studentRouter = require('./studentRoute')
 const employeeRouter = require('./employeeRoute')
@@ -18,6 +24,7 @@ const groupRouter = require('./groupRoute')
 
 const sessionRoutes = require('./sessionRoutes');
 const positionsRoutes = require('./positionsRoutes');
+const employeeGradesRoutes = require('./employeeGradesRoute');
 const contactDataTypesRoutes = require('./contactDataTypesRoutes');
 const contactDataRoutes = require('./contactDataRoutes');
 const departmentRoutes = require('./departmentRoutes');
@@ -26,6 +33,7 @@ const documentAttachmentRoutes = require('./documentAttachmentRoutes');
 const documentEditJobLogRoutes = require('./documentEditJobLogRoutes');
 const documentEditJobRoutes = require('./documentEditJobRoutes');
 const documentTypeRoutes = require('./documentTypeRoutes');
+const documentJobsRoutes = require('./documentJobs');
 
 
 router.use('/user', userRouter)
@@ -42,15 +50,18 @@ router.use('/group', groupRouter)
 
 router.use('/session', sessionRoutes)
 router.use('/positions', positionsRoutes)
+router.use('/employeeGrade', employeeGradesRoutes)
 router.use('/contactDataTypes', contactDataTypesRoutes)
 router.use('/contactData', contactDataRoutes)
 router.use('/department', departmentRoutes)
 router.use('/disciplineEmployee', disciplineEmployeeRoutes)
-router.use('/documentAttachment', documentAttachmentRoutes)
+//router.use('/documentAttachment', documentAttachmentRoutes)
 router.use('/documentEditJobLog', documentEditJobLogRoutes)
 router.use('/documentEditJob', documentEditJobRoutes)
 router.use('/documentType', documentTypeRoutes)
+router.use('/document-jobs', documentJobsRoutes)
 
+router.post('/documentAttachment', upload.single('doc'), documentAttachmentController.create);
 // Только для админов
 router.use('/admin-only', authMiddleware, checkRole('admin'), userRouter);
 // router.beforeEach((to, from, next) => {

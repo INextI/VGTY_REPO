@@ -1,4 +1,3 @@
-// backend/src/routes/documentJobs.js
 const express = require('express');
 const router = express.Router();
 const documentJobsController = require('../controllers/documentJobsController');
@@ -66,34 +65,3 @@ router.post('/:id/cancel', documentJobsController.cancelJob);
 router.get('/documents/:documentId/preview', documentJobsController.getDocumentPreview);
 
 module.exports = router;
-
-
-/* 
-// POST /api/document-jobs
-// Создание нового задания на редактирование
-router.post('/', async (req, res) => {
-    const { searchText, replaceText, filters } = req.body;
-    // ... валидация данных ...
-
-    // 1. Создаем запись в таблице document_edit_jobs
-    const job = await db.query(
-        `INSERT INTO document_edit_jobs (search_text, replace_text, filter_criteria, created_by_employee_id)
-         VALUES ($1, $2, $3, $4) RETURNING id`,
-        [searchText, replaceText, filters, req.user.id]
-    );
-    const jobId = job.rows[0].id;
-
-    // 2. Добавляем задачу в очередь BullMQ
-    await documentEditQueue.add('process-job', { jobId });
-
-    // 3. Отвечаем клиенту немедленно, не дожидаясь выполнения
-    res.status(202).json({ message: "Задание принято в обработку.", jobId });
-});
-
-// GET /api/document-jobs/:id/status
-// Получение статуса выполнения задания
-router.get('/:id/status', async (req, res) => {
-    const { id } = req.params;
-    // ... логика получения статуса из БД, подсчета обработанных файлов из document_edit_job_logs ...
-    res.json({ jobStatus, progress, logs });
-}); */

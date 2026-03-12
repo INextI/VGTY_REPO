@@ -13,9 +13,40 @@ const storage = multer.diskStorage({
             uuidv4() + "_" + Date.now() + path.extname(file.originalname);
 
         cb(null, uniqueName);
-    }
+    },
+
+   
+
 });
 
-const upload = multer({ storage });
+// Настройка фильтра файлов
+const fileFilter = (req, file, cb) => {
+  // Разрешаем только определенные типы файлов
+  const allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'text/markdown',
+    'text/html'
+  ];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Неподдерживаемый тип файла'), false);
+  }
+};
+
+// Создаем экземпляр multer
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 1 // только один файл за раз
+  }
+});
 
 module.exports = upload;
+

@@ -13,7 +13,7 @@ const Token = require('./tokenModel');
 const Role = require('./roleModel')
 const AcademicYear = require('./academicYearModel')
 const Department = require('./departmentsModel')
-const Faculty = require('./facultyModel')
+const FacultyModel = require('./facultyModel')
 const ContactDataTypes = require('./contactDataTypesModel')
 const DocumentType = require('./documentTypes')
 const DocumentEditJob = require('./documentEditJobs')
@@ -47,8 +47,8 @@ Role.hasMany(User, { foreignKey: 'role_id' });
 
 
 // Связь "Один-ко-Многим": Faculty -> Employees
-Faculty.hasMany(Employee, { foreignKey: 'faculty_id' })
-Employee.belongsTo(Faculty, { foreignKey: 'faculty_id' })
+FacultyModel.hasMany(Employee, { foreignKey: 'faculty_id' })
+Employee.belongsTo(FacultyModel, { foreignKey: 'faculty_id' })
 
 // Связь "Один-ко-Многим": Group -> Students
 Group.hasMany(Student, { foreignKey: 'group_id', as: 'students' })
@@ -71,8 +71,8 @@ Employee.hasMany(Group, { foreignKey: 'curator_id', as: 'curatedGroups' })
 Group.belongsTo(Employee, { foreignKey: 'curator_id', as: 'curator' })
 
 // Связь "Один-к-Одному": EduProgram ↔ Faculty
-Faculty.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
-EduProgramm.belongsTo(Faculty, { foreignKey: 'faculty_id' })
+FacultyModel.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
+EduProgramm.belongsTo(FacultyModel, { foreignKey: 'faculty_id' })
 
 
 // Связь "Один-к-Многим": EduProgram ↔ EducationForm
@@ -280,7 +280,7 @@ module.exports = {
     User,
     Student,
     Employee,
-    
+    Role,
     Group,
     Discipline, 
     EducationForm, 
@@ -296,5 +296,6 @@ module.exports = {
     CompletedSession,
     ContactData,
     EmployeeGrades , 
-    Positions
+    Positions,
+    FacultyModel
 };

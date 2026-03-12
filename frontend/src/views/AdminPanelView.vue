@@ -5,8 +5,9 @@
       <div class="header-container">
         <div class="header-left">
           <div class="logo">
-            <router-link to="/student/home">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+            <router-link to="/admin">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
                 alt="ВГТУ" width="24" height="34">
             </router-link>
           </div>
@@ -26,7 +27,7 @@
           </button>
           <div class="user-info">
             <span>{{ userName }}</span>
-            <router-link to="/student/profile" class="user-avatar">
+            <router-link to="/admin/profile" class="user-avatar">
               <i class="fas fa-user"></i>
             </router-link>
           </div>
@@ -96,6 +97,30 @@
                   class="form-input"
                 />
               </div>
+              <div class="form-group">
+                <label for="patronymic">
+                  <i class="fas fa-user"></i> Отчество
+                  <span class="hint">Необязательное поле</span>
+                </label>
+                <input
+                  id="patronymic"
+                  v-model="formData.patronymic"
+                  placeholder="Введите отчество"
+                  class="form-input"
+                />
+              </div>
+              <div class="form-group">
+                <label for="birth_date">
+                  <i class="fas fa-calendar"></i> Дата рождения
+                  <span class="hint">Формат: ГГГГ-ММ-ДД</span>
+                </label>
+                <input
+                  id="birth_date"
+                  v-model="formData.birth_date"
+                  type="date"
+                  class="form-input"
+                />
+              </div>
             </div>
           </div>
           
@@ -104,40 +129,42 @@
             <h2><i class="fas fa-user-tag"></i> Роль пользователя</h2>
             <div class="role-selector">
               <div
+                v-for="role in availableRoles"
+                :key="role.id"
                 class="role-option"
-                :class="{ 'active': formData.role === 'student' }"
-                @click="formData.role = 'student'"
+                :class="{ 'active': formData.role_id === role.id }"
+                @click="selectRole(role)"
               >
-                <i class="fas fa-graduation-cap"></i>
-                <span>Студент</span>
-              </div>
-              <div
-                class="role-option"
-                :class="{ 'active': formData.role === 'teacher' }"
-                @click="formData.role = 'teacher'"
-              >
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>Преподаватель</span>
+                <i :class="getRoleIcon(role.code)"></i>
+                <span>{{ role.name }}</span>
               </div>
             </div>
           </div>
           
           <!-- Дополнительные поля для студента -->
-          <div v-if="formData.role === 'student'" class="form-section">
+          <div v-if="selectedRoleCode === 'student'" class="form-section">
             <h2><i class="fas fa-university"></i> Информация о студенте</h2>
             <div class="form-grid">
               <div class="form-group">
                 <label for="group_id">
-                  <i class="fas fa-users"></i> ID группы
-                  <span class="hint">Номер учебной группы</span>
+                  <i class="fas fa-users"></i> Группа *
+                  <span class="hint">Выберите учебную группу</span>
                 </label>
-                <input
+                <select
                   id="group_id"
-                  v-model.number="formData.group_id"
-                  type="number"
-                  placeholder="Например: 101"
-                  class="form-input"
-                />
+                  v-model="formData.group_id"
+                  required
+                  class="form-select"
+                  :disabled="groupsLoading"
+                >
+                  <option value="" disabled>Выберите группу</option>
+                  <option v-for="group in groups" :key="group.id" :value="group.id">
+                    {{ group.name }}
+                  </option>
+                </select>
+                <div v-if="groupsLoading" class="loading-indicator">
+                  <i class="fas fa-spinner fa-spin"></i> Загрузка групп...
+                </div>
               </div>
               <div class="form-group">
                 <label for="faculty_id">
@@ -146,15 +173,19 @@
                 </label>
                 <select
                   id="faculty_id"
-                  v-model.number="formData.faculty_id"
+                  v-model="formData.faculty_id"
                   required
                   class="form-select"
+                  :disabled="facultiesLoading"
                 >
-                  <option value="" disabled selected>Выберите факультет</option>
+                  <option value="" disabled>Выберите факультет</option>
                   <option v-for="faculty in faculties" :key="faculty.id" :value="faculty.id">
                     {{ faculty.name }}
                   </option>
                 </select>
+                <div v-if="facultiesLoading" class="loading-indicator">
+                  <i class="fas fa-spinner fa-spin"></i> Загрузка факультетов...
+                </div>
               </div>
               <div class="form-group">
                 <label for="education_form_id">
@@ -163,15 +194,66 @@
                 </label>
                 <select
                   id="education_form_id"
-                  v-model.number="formData.education_form_id"
+                  v-model="formData.education_form_id"
                   required
                   class="form-select"
+                  :disabled="educationFormsLoading"
                 >
-                  <option value="" disabled selected>Выберите форму обучения</option>
+                  <option value="" disabled>Выберите форму обучения</option>
                   <option v-for="form in educationForms" :key="form.id" :value="form.id">
                     {{ form.name }}
                   </option>
                 </select>
+                <div v-if="educationFormsLoading" class="loading-indicator">
+                  <i class="fas fa-spinner fa-spin"></i> Загрузка форм обучения...
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Дополнительные поля для преподавателя -->
+          <div v-if="selectedRoleCode === 'teacher'" class="form-section">
+            <h2><i class="fas fa-chalkboard-teacher"></i> Информация о преподавателе</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="faculty_id_teacher">
+                  <i class="fas fa-building"></i> Факультет
+                  <span class="hint">Выберите факультет (необязательно)</span>
+                </label>
+                <select
+                  id="faculty_id_teacher"
+                  v-model="formData.faculty_id"
+                  class="form-select"
+                  :disabled="facultiesLoading"
+                >
+                  <option value="">Не выбран</option>
+                  <option v-for="faculty in faculties" :key="faculty.id" :value="faculty.id">
+                    {{ faculty.name }}
+                  </option>
+                </select>
+                <div v-if="facultiesLoading" class="loading-indicator">
+                  <i class="fas fa-spinner fa-spin"></i> Загрузка факультетов...
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="grade_id">
+                  <i class="fas fa-award"></i> Ученое звание
+                  <span class="hint">Выберите ученое звание</span>
+                </label>
+                <select
+                  id="grade_id"
+                  v-model="formData.grade_id"
+                  class="form-select"
+                  :disabled="gradesLoading"
+                >
+                  <option value="">Не выбрано</option>
+                  <option v-for="grade in grades" :key="grade.id" :value="grade.id">
+                    {{ grade.name }}
+                  </option>
+                </select>
+                <div v-if="gradesLoading" class="loading-indicator">
+                  <i class="fas fa-spinner fa-spin"></i> Загрузка ученых званий...
+                </div>
               </div>
             </div>
           </div>
@@ -200,43 +282,171 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import $api from '@/api';
 
 const message = ref('');
 const status = ref('');
 const isSubmitting = ref(false);
+const roles = ref([]);
+const rolesLoading = ref(false);
 
-// Данные для выпадающих списков
-const faculties = ref([
-  { id: 1, name: 'Факультет информационных технологий' },
-  { id: 2, name: 'Факультет экономики' },
-  { id: 3, name: 'Факультет строительства' },
-  { id: 4, name: 'Факультет машиностроения' }
-]);
-
-const educationForms = ref([
-  { id: 1, name: 'Очная' },
-  { id: 2, name: 'Заочная' },
-  { id: 3, name: 'Очно-заочная' }
-]);
+// Данные для фильтров
+const groups = ref([]);
+const groupsLoading = ref(false);
+const faculties = ref([]);
+const facultiesLoading = ref(false);
+const educationForms = ref([]);
+const educationFormsLoading = ref(false);
+const grades = ref([]);
+const gradesLoading = ref(false);
 
 // Данные формы
 const formData = reactive({
   login: '',
   password: '',
-  role: 'student',
+  role_id: null,
   first_name: '',
   last_name: '',
-  group_id: null,
-  faculty_id: null,
-  education_form_id: null
+  patronymic: '',
+  birth_date: '',
+  // Поля для студента
+  group_id: '',
+  faculty_id: '',
+  education_form_id: '',
+  // Поля для преподавателя
+  grade_id: ''
 });
 
 // Иконка для сообщения
 const statusIcon = computed(() => {
   return status.value === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
 });
+
+// Выбранный код роли
+const selectedRoleCode = computed(() => {
+  const role = roles.value.find(r => r.id === formData.role_id);
+  return role ? role.code : '';
+});
+
+// Доступные роли для выбора
+const availableRoles = computed(() => {
+  return roles.value.filter(role => ['student', 'teacher'].includes(role.code));
+});
+
+// Иконка для роли
+const getRoleIcon = (roleCode) => {
+  const icons = {
+    'student': 'fas fa-graduation-cap',
+    'teacher': 'fas fa-chalkboard-teacher',
+    'admin': 'fas fa-user-shield',
+    'moderator': 'fas fa-user-cog'
+  };
+  return icons[roleCode] || 'fas fa-user';
+};
+
+// Выбор роли
+const selectRole = (role) => {
+  formData.role_id = role.id;
+};
+
+// Загрузка ролей из БД
+const fetchRoles = async () => {
+  rolesLoading.value = true;
+  try {
+    const response = await $api.get('/role');
+    roles.value = response.data;
+    console.log('Роли загружены:', roles.value);
+
+    // Устанавливаем роль по умолчанию (студент)
+    const defaultRole = roles.value.find(r => r.code === 'student');
+    if (defaultRole) {
+      formData.role_id = defaultRole.id;
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки ролей:', error);
+    
+    // Используем реальные UUID вместо строковых идентификаторов
+    roles.value = [
+      { id: 'd16ae680-9579-47b5-be61-7cf1ef9d1749', name: 'Студент', code: 'student' },
+      { id: 'f77a7565-f9d8-4c15-859a-8248d5c395cc', name: 'Преподаватель', code: 'teacher' },
+      { id: 'f91847c6-d78d-4fc4-8204-fdc493142ee8', name: 'Администратор', code: 'admin' }
+    ];
+
+    // Устанавливаем роль по умолчанию
+    const defaultRole = roles.value.find(r => r.code === 'student');
+    if (defaultRole) {
+      formData.role_id = defaultRole.id;
+    }
+  } finally {
+    rolesLoading.value = false;
+  }
+};
+
+
+// Загрузка групп из БД
+const fetchGroups = async () => {
+  groupsLoading.value = true;
+  try {
+    const response = await $api.get('/group');
+    groups.value = response.data;
+    console.log('Группы загружены:', groups.value);
+  } catch (error) {
+    console.error('Ошибка загрузки групп:', error);
+    message.value = '❌ Ошибка загрузки списка групп';
+    status.value = 'error';
+  } finally {
+    groupsLoading.value = false;
+  }
+};
+
+// Загрузка факультетов из БД
+const fetchFaculties = async () => {
+  facultiesLoading.value = true;
+  try {
+    const response = await $api.get('/faculty');
+    faculties.value = response.data;
+    console.log('Факультеты загружены:', faculties.value);
+  } catch (error) {
+    console.error('Ошибка загрузки факультетов:', error);
+    message.value = '❌ Ошибка загрузки списка факультетов';
+    status.value = 'error';
+  } finally {
+    facultiesLoading.value = false;
+  }
+};
+
+// Загрузка форм обучения из БД
+const fetchEducationForms = async () => {
+  educationFormsLoading.value = true;
+  try {
+    const response = await $api.get('/educationForm');
+    educationForms.value = response.data;
+    console.log('Формы обучения загружены:', educationForms.value);
+  } catch (error) {
+    console.error('Ошибка загрузки форм обучения:', error);
+    message.value = '❌ Ошибка загрузки списка форм обучения';
+    status.value = 'error';
+  } finally {
+    educationFormsLoading.value = false;
+  }
+};
+
+// Загрузка ученых званий из БД
+const fetchGrades = async () => {
+  gradesLoading.value = true;
+  try {
+    const response = await $api.get('/employeeGrade');
+    grades.value = response.data;
+    console.log('Ученые звания загружены:', grades.value);
+  } catch (error) {
+    console.error('Ошибка загрузки ученых званий:', error);
+    message.value = '❌ Ошибка загрузки списка ученых званий';
+    status.value = 'error';
+  } finally {
+    gradesLoading.value = false;
+  }
+};
 
 // Создание пользователя
 const handleCreateUser = async () => {
@@ -245,15 +455,51 @@ const handleCreateUser = async () => {
   status.value = '';
   
   try {
-    // Валидация обязательных полей для студента
-    if (formData.role === 'student') {
-      if (!formData.faculty_id || !formData.education_form_id) {
-        throw new Error('Для студента необходимо указать факультет и форму обучения');
+    // Валидация обязательных полей
+    if (!formData.login || !formData.password || !formData.first_name || !formData.last_name) {
+      throw new Error('Заполните все обязательные поля');
+    }
+    
+    if (!formData.role_id) {
+      throw new Error('Роль не выбрана');
+    }
+    
+    // Получаем выбранную роль
+    const selectedRole = roles.value.find(r => r.id === formData.role_id);
+    if (!selectedRole) {
+      throw new Error('Выбранная роль не найдена');
+    }
+    
+    // Валидация для студента
+    if (selectedRole.code === 'student') {
+      if (!formData.group_id || !formData.faculty_id || !formData.education_form_id) {
+        throw new Error('Для студента необходимо указать группу, факультет и форму обучения');
       }
     }
     
+   const userData = {
+login: formData.login,
+password: formData.password,
+role_id: formData.role_id,
+
+first_name: formData.first_name,
+last_name: formData.last_name,
+patronymic: formData.patronymic || null,
+birth_date: formData.birth_date || null
+};
+    
+    // Добавляем специфичные поля в зависимости от роли
+    if (selectedRole.code === 'student') {
+      userData.group_id = formData.group_id;
+      userData.faculty_id = formData.faculty_id;
+      userData.education_form_id = formData.education_form_id;
+    } else if (selectedRole.code === 'teacher') {
+      userData.faculty_id = formData.faculty_id || null;
+      userData.grade_id = formData.grade_id || null;
+    }
+    
     // Отправка данных
-    const response = await $api.post('/user/full', formData);
+    const response = await $api.post('/user/full', userData);
     message.value = '✅ Пользователь успешно создан!';
     status.value = 'success';
     
@@ -282,26 +528,25 @@ const resetForm = () => {
   Object.assign(formData, {
     login: '',
     password: '',
-    role: 'student',
+    role_id: roles.value.find(r => r.code === 'student')?.id || null,
     first_name: '',
     last_name: '',
-    group_id: null,
-    faculty_id: null,
-    education_form_id: null
+    patronymic: '',
+    birth_date: '',
+    group_id: '',
+    faculty_id: '',
+    education_form_id: '',
+    grade_id: ''
   });
 };
 
-// Загрузка данных при монтировании
+// Загрузка всех данных при монтировании
 onMounted(async () => {
-  try {
-    // Можно загрузить реальные данные с сервера
-    // const facultiesResponse = await $api.get('/faculties');
-    // faculties.value = facultiesResponse.data;
-    // const formsResponse = await $api.get('/education-forms');
-    // educationForms.value = formsResponse.data;
-  } catch (error) {
-    console.error('Ошибка загрузки данных:', error);
-  }
+  await fetchRoles();
+  await fetchGroups();
+  await fetchFaculties();
+  await fetchEducationForms();
+  await fetchGrades();
 });
 
 // Заглушки для методов хедера

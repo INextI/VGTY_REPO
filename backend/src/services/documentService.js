@@ -1,99 +1,57 @@
 // backend/src/services/documentService.js 
 const { Worker } = require('bullmq');
 const JSZip = require('jszip');
-const mammoth = require('mammoth');
 const db = require('../config/db');
+const { QueryTypes } = require('sequelize');
 
-/**
- * Улучшенная функция поиска документов по критериям
- * Поддерживает все типы связей из таблицы document_attachments
- */
 async function findDocumentsByCriteria(criteria) {
     let query = `
-        SELECT DISTINCT da.id, da.name, da.type_id, dt.name as document_type
+        SELECT DISTINCT da.id, da.name, da.type_id, dt.name as "document_type"
         FROM document_attachments da
         JOIN document_types dt ON da.type_id = dt.id
     `;
-    
-    const joins = [];
+
     const wheres = [];
-    const params = [];
-    let paramIndex = 1;
-    
-    // Собираем условия для разных типов фильтров
-    const conditions = [];
-    
-    // Фильтр по кафедрам (прямая связь)
-    if (criteria.departmentIds && criteria.departmentIds.length > 0) {
-        conditions.push(`da.department_id = ANY($${paramIndex})`);
-        params.push(criteria.departmentIds);
-        paramIndex++;
+    const replacements = {};
+
+    if (criteria.departmentIds?.length) {
+        wheres.push(`da.department_id IN (:departmentIds)`);
+        replacements.departmentIds = criteria.departmentIds;
     }
-    
-    // Фильтр по дисциплинам (прямая связь)
-    if (criteria.disciplineIds && criteria.disciplineIds.length > 0) {
-        conditions.push(`da.discipline_id = ANY($${paramIndex})`);
-        params.push(criteria.disciplineIds);
-        paramIndex++;
+    if (criteria.disciplineIds?.length) {
+        wheres.push(`da.discipline_id IN (:disciplineIds)`);
+        replacements.disciplineIds = criteria.disciplineIds;
     }
-    
-    // Фильтр по образовательным программам (прямая связь)
-    if (criteria.eduProgramIds && criteria.eduProgramIds.length > 0) {
-        conditions.push(`da.edu_program_id = ANY($${paramIndex})`);
-        params.push(criteria.eduProgramIds);
-        paramIndex++;
+    if (criteria.eduProgramIds?.length) {
+        wheres.push(`da.edu_program_id IN (:eduProgramIds)`);
+        replacements.eduProgramIds = criteria.eduProgramIds;
     }
-    
-    // Фильтр по сессиям (прямая связь)
-    if (criteria.sessionIds && criteria.sessionIds.length > 0) {
-        conditions.push(`da.session_id = ANY($${paramIndex})`);
-        params.push(criteria.sessionIds);
-        paramIndex++;
+    if (criteria.documentTypeIds?.length) {
+        wheres.push(`da.type_id IN (:documentTypeIds)`);
+        replacements.documentTypeIds = criteria.documentTypeIds;
     }
-    
-    // Фильтр по кафедрам через образовательные программы
-    if (criteria.eduProgramByDepartmentIds && criteria.eduProgramByDepartmentIds.length > 0) {
-        joins.push('LEFT JOIN edu_programs ep ON da.edu_program_id = ep.id');
-        conditions.push(`ep.department_id = ANY($${paramIndex})`);
-        params.push(criteria.eduProgramByDepartmentIds);
-        paramIndex++;
-    }
-    
-    // Фильтр по дисциплинам через образовательные программы
-    if (criteria.disciplineByEduProgramIds && criteria.disciplineByEduProgramIds.length > 0) {
-        joins.push('LEFT JOIN edu_program_disciplines epd ON da.edu_program_id = epd.edu_program_id');
-        conditions.push(`epd.discipline_id = ANY($${paramIndex})`);
-        params.push(criteria.disciplineByEduProgramIds);
-        paramIndex++;
-    }
-    
-    // Фильтр по типам документов
-    if (criteria.documentTypeIds && criteria.documentTypeIds.length > 0) {
-        conditions.push(`da.type_id = ANY($${paramIndex})`);
-        params.push(criteria.documentTypeIds);
-        paramIndex++;
-    }
-    
-    // Собираем итоговый запрос
-    if (joins.length > 0) {
-        query += ' ' + joins.join(' ');
-    }
-    
-    if (conditions.length > 0) {
-        query += ' WHERE ' + conditions.join(' OR ');
+
+    // Если есть фильтры, объединяем их через OR (как в вашей логике) или AND
+    if (wheres.length > 0) {
+        query += ' WHERE ' + wheres.join(' OR ');
     }
     
     query += ' ORDER BY da.name';
     
-    try {
-        const result = await db.query(query, params);
-        return result.rows;
+
+
+  try {
+        const results = await db.query(query, {
+            replacements: replacements, 
+            type: db.QueryTypes.SELECT
+        });
+        return results; // Sequelize возвращает массив объектов напрямую
     } catch (error) {
         console.error('Ошибка при поиске документов:', error);
         throw error;
     }
-}
 
+}
 /**
  * Безопасная замена текста в DOCX файле с учетом XML структуры
  */
@@ -363,41 +321,33 @@ function escapeRegExp(string) {
  */
 async function previewChanges(searchText, filterCriteria) {
     const documents = await findDocumentsByCriteria(filterCriteria);
-    
     const previewResults = [];
     
     for (const doc of documents) {
         try {
+            // Исправляем получение данных (Sequelize возвращает массив)
             const docData = await db.query(
-                'SELECT doc, name FROM document_attachments WHERE id = $1',
-                [doc.id]
+                'SELECT doc, name FROM document_attachments WHERE id = :id',
+                { replacements: { id: doc.id }, type: QueryTypes.SELECT }
             );
             
-            if (docData.rows.length > 0) {
-                const { doc: buffer, name: fileName } = docData.rows[0];
+            if (docData.length > 0) {
+                const { doc: buffer, name: fileName } = docData[0];
                 const extension = fileName.split('.').pop().toLowerCase();
-                
                 let content = '';
                 let matches = 0;
                 
                 if (extension === 'docx') {
-                    // Для DOCX извлекаем текст
                     const zip = await JSZip.loadAsync(buffer);
                     const contentXml = zip.file("word/document.xml");
-                    
                     if (contentXml) {
                         const xmlContent = await contentXml.async("string");
-                        // Извлекаем текст из XML
                         const textMatches = xmlContent.match(/<w:t[^>]*>([^<]+)<\/w:t>/gi) || [];
-                        content = textMatches.map(match => 
-                            match.replace(/<w:t[^>]*>([^<]+)<\/w:t>/i, '$1')
-                        ).join(' ');
-                        
-                        // Считаем совпадения
+                        content = textMatches.map(m => m.replace(/<w:t[^>]*>([^<]+)<\/w:t>/i, '$1')).join(' ');
                         const regex = new RegExp(escapeRegExp(searchText), 'gi');
                         matches = (content.match(regex) || []).length;
                     }
-                } else if (['txt', 'md', 'html', 'htm'].includes(extension)) {
+                } else if (['txt', 'md', 'html'].includes(extension)) {
                     content = buffer.toString('utf-8');
                     const regex = new RegExp(escapeRegExp(searchText), 'gi');
                     matches = (content.match(regex) || []).length;
@@ -415,9 +365,9 @@ async function previewChanges(searchText, filterCriteria) {
             console.error(`Ошибка при предпросмотре документа ${doc.id}:`, error);
         }
     }
-    
     return previewResults;
 }
+
 
 module.exports = {
     findDocumentsByCriteria,
@@ -429,14 +379,14 @@ module.exports = {
     createBackup
 };
 
-// Запускаем воркер для обработки очереди
-new Worker('document-edit-queue', processJob, { 
-    connection: { 
-        host: process.env.REDIS_HOST || "localhost", 
-        port: process.env.REDIS_PORT || 6379 
-    },
-    concurrency: 3 // Обрабатываем 3 документа одновременно
-});
+// // Запускаем воркер для обработки очереди
+// new Worker('document-edit-queue', processJob, { 
+//     connection: { 
+//         host: process.env.REDIS_HOST || "localhost", 
+//         port: process.env.REDIS_PORT || 6379 
+//     },
+//     concurrency: 3 // Обрабатываем 3 документа одновременно
+// });
 
 
 

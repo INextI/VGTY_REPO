@@ -20,6 +20,9 @@ class DocumentTypeController {
         }
     }
 
+   
+
+
     async getById(req, res, next) {
         try {
             const type = await documentTypeService.getById(req.params.id);
@@ -55,6 +58,18 @@ class DocumentTypeController {
             next(e);
         }
     }
+
+    
 }
+
+
+ exports.getAll = async (req, res) => {
+    try {
+        const types = await documentTypeService.getAll();
+        res.json(types); // Важно: возвращаем массив напрямую
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+    };
 
 module.exports = new DocumentTypeController();

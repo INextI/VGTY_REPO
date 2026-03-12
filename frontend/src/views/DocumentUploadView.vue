@@ -1,539 +1,838 @@
-
 <template>
-<header>
-  <div class="header-container">
-    <div class="header-left">
-      <div class="logo">
-        <router-link to="/student/home">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
-            alt="ВГТУ" width="24" height="34">
-        </router-link>
+ <!-- Header -->
+    <header>
+      <div class="header-container">
+        <div class="header-left">
+          <div class="logo">
+            <router-link to="/admin">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+                alt="ВГТУ" width="24" height="34">
+            </router-link>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="icon" title="Поиск" @click="toggleSearch">
+            <i class="fas fa-search"></i>
+          </button>
+          <button class="icon" title="Уведомления" @click="toggleNotifications">
+            <i class="fas fa-bell"></i>
+            <span v-if="unreadNotifications > 0" class="notification-badge">
+              {{ unreadNotifications }}
+            </span>
+          </button>
+          <button class="icon" title="Чат" @click="openChat">
+            <i class="fas fa-comments"></i>
+          </button>
+          <div class="user-info">
+            <span>{{ userName }}</span>
+            <router-link to="/student/profile" class="user-avatar">
+              <i class="fas fa-user"></i>
+            </router-link>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="header-right">
-      <button class="icon" title="Поиск" @click="toggleSearch">
-        <i class="fas fa-search"></i>
-      </button>
-      <button class="icon" title="Уведомления" @click="toggleNotifications">
-        <i class="fas fa-bell"></i>
-        <span v-if="unreadNotifications > 0" class="notification-badge">
-          {{ unreadNotifications }}
-        </span>
-      </button>
-      <button class="icon" title="Чат" @click="openChat">
-        <i class="fas fa-comments"></i>
-      </button>
-      <div class="user-info">
-        <span>{{ userName }}</span>
-        <router-link to="/student/profile" class="user-avatar">
-          <i class="fas fa-user"></i>
-        </router-link>
-      </div>
-    </div>
-  </div>
-</header>
-<div class="main-content">
-  <div class="panel">
-    <h2 class="panel-title">Загрузка документов</h2>
-    
-    <!-- Отладочная информация -->
-    <div v-if="debugInfo" class="debug-info">
-      <h3>Отладочная информация:</h3>
-      <div class="debug-stats">
-        <div>Типы документов: {{ documentTypes.length }}</div>
-        <div>Кафедры: {{ departments.length }}</div>
-        <div>Дисциплины: {{ disciplines.length }}</div>
-        <div>Программы: {{ eduPrograms.length }}</div>
-        <div>Сессии: {{ sessions.length }}</div>
-      </div>
-      <button @click="toggleDebug" class="btn-small">
-        {{ showDebug ? 'Скрыть детали' : 'Показать детали' }}
-      </button>
-      <div v-if="showDebug" class="debug-details">
-        <pre>{{ JSON.stringify(debugData, null, 2) }}</pre>
-      </div>
-    </div>
-    
-    <form @submit.prevent="uploadDocument" class="upload-form">
-      <div class="form-section">
-        <h3 class="section-title">Основная информация</h3>
-        <div class="form-row">
+    </header>
+  <div class="main-content">
+    <div class="panel">
+      
+
+      <!-- Форма загрузки -->
+      <form @submit.prevent="uploadDocument" class="upload-form">
+        <div class="form-section">
+          <h3 class="section-title">Основная информация</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Выберите файл</label>
+              <input
+                type="file"
+                ref="fileInput"
+                @change="handleFileSelect"
+                class="form-control"
+                accept=".docx,.txt,.pdf,.md,.html,.htm"
+                multiple
+              >
+              <div class="hint">Поддерживаемые форматы: DOCX, TXT, PDF, MD, HTML</div>
+            </div>
+            <div class="form-group">
+              <label>Тип документа</label>
+              <select v-model="documentTypeId" class="select-control" required>
+                <option value="">Выберите тип документа</option>
+                <option v-for="type in documentTypes" :key="type.id" :value="type.id">
+                  {{ type.name }}
+                </option>
+              </select>
+              <div v-if="documentTypes.length === 0" class="error-text">
+                Нет доступных типов документов
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Привязка к сущности</h3>
           <div class="form-group">
-            <label>Выберите файл</label>
-            <input
-              type="file"
-              ref="fileInput"
-              @change="handleFileSelect"
+            <label>Тип привязки</label>
+            <div class="entity-selection">
+              <div class="checkbox-label">
+                <input
+                  type="radio"
+                  id="department"
+                  v-model="entityType"
+                  value="department"
+                  class="form-check-input"
+                >
+                <label class="form-check-label" for="department">Кафедра</label>
+              </div>
+              <div class="checkbox-label">
+                <input
+                  type="radio"
+                  id="discipline"
+                  v-model="entityType"
+                  value="discipline"
+                  class="form-check-input"
+                >
+                <label class="form-check-label" for="discipline">Дисциплина</label>
+              </div>
+              <div class="checkbox-label">
+                <input
+                  type="radio"
+                  id="program"
+                  v-model="entityType"
+                  value="program"
+                  class="form-check-input"
+                >
+                <label class="form-check-label" for="program">Образовательная программа</label>
+              </div>
+              <div class="checkbox-label">
+                <input
+                  type="radio"
+                  id="session"
+                  v-model="entityType"
+                  value="session"
+                  class="form-check-input"
+                >
+                <label class="form-check-label" for="session">Сессия</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" v-if="entityType === 'department'">
+              <label>Выберите кафедру</label>
+              <select v-model="departmentId" class="select-control">
+                <option value="">Выберите кафедру</option>
+                <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                  {{ dept.name }}
+                </option>
+              </select>
+              <div v-if="departments.length === 0" class="error-text">
+                Нет доступных кафедр
+              </div>
+            </div>
+            <div class="form-group" v-if="entityType === 'discipline'">
+              <label>Выберите дисциплину</label>
+              <select v-model="disciplineId" class="select-control">
+                <option value="">Выберите дисциплину</option>
+                <option v-for="disc in disciplines" :key="disc.id" :value="disc.id">
+                  {{ disc.name }}
+                </option>
+              </select>
+              <div v-if="disciplines.length === 0" class="error-text">
+                Нет доступных дисциплин
+              </div>
+            </div>
+            <div class="form-group" v-if="entityType === 'program'">
+              <label>Выберите образовательную программу</label>
+              <select v-model="programId" class="select-control">
+                <option value="">Выберите программу</option>
+                <option v-for="program in eduPrograms" :key="program.id" :value="program.id">
+                  {{ program.name }} ({{ program.department_name }})
+                </option>
+              </select>
+              <div v-if="eduPrograms.length === 0" class="error-text">
+                Нет доступных программ
+              </div>
+            </div>
+            <div class="form-group" v-if="entityType === 'session'">
+              <label>Выберите сессию</label>
+              <select v-model="sessionId" class="select-control">
+                <option value="">Выберите сессию</option>
+                <option v-for="session in sessions" :key="session.id" :value="session.id">
+                  {{ session.discipline_name }} - {{ session.session_date }} ({{ session.session_type }})
+                </option>
+              </select>
+              <div v-if="sessions.length === 0" class="error-text">
+                Нет доступных сессий
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-title">Дополнительная информация</h3>
+          <div class="form-group">
+            <label>Описание документа (необязательно)</label>
+            <textarea
+              v-model="description"
               class="form-control"
-              accept=".docx,.txt,.pdf,.md,.html,.htm"
-              multiple
-            >
-            <div class="hint">Поддерживаемые форматы: DOCX, TXT, PDF, MD, HTML</div>
+              rows="3"
+              placeholder="Введите описание документа..."
+            ></textarea>
           </div>
-          <div class="form-group">
-            <label>Тип документа</label>
-            <select v-model="documentTypeId" class="select-control" required>
-              <option value="">Выберите тип документа</option>
-              <option v-for="type in documentTypes" :key="type.id" :value="type.id">
-                {{ type.name }}
-              </option>
-            </select>
-            <div v-if="documentTypes.length === 0" class="error-text">
-              Нет доступных типов документов
+        </div>
+
+        <div class="upload-progress" v-if="uploadProgress > 0">
+          <div class="progress-section">
+            <div class="progress-header">
+              <span>Прогресс загрузки</span>
+              <span>{{ uploadProgress }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                :style="{ width: uploadProgress + '%' }"
+              ></div>
+            </div>
+            <div class="progress-stats">
+              <span>{{ processedFiles }} из {{ selectedFiles.length }} файлов</span>
+              <span>{{ uploadProgress }}% загружено</span>
             </div>
           </div>
         </div>
-      </div>
-      <div class="form-section">
-        <h3 class="section-title">Привязка к сущности</h3>
-        <div class="form-group">
-          <label>Тип привязки</label>
-          <div class="entity-selection">
-            <div class="checkbox-label">
-              <input
-                type="radio"
-                id="department"
-                v-model="entityType"
-                value="department"
-                class="form-check-input"
-              >
-              <label class="form-check-label" for="department">Кафедра</label>
-            </div>
-            <div class="checkbox-label">
-              <input
-                type="radio"
-                id="discipline"
-                v-model="entityType"
-                value="discipline"
-                class="form-check-input"
-              >
-              <label class="form-check-label" for="discipline">Дисциплина</label>
-            </div>
-            <div class="checkbox-label">
-              <input
-                type="radio"
-                id="program"
-                v-model="entityType"
-                value="program"
-                class="form-check-input"
-              >
-              <label class="form-check-label" for="program">Образовательная программа</label>
-            </div>
-            <div class="checkbox-label">
-              <input
-                type="radio"
-                id="session"
-                v-model="entityType"
-                value="session"
-                class="form-check-input"
-              >
-              <label class="form-check-label" for="session">Сессия</label>
-            </div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group" v-if="entityType === 'department'">
-            <label>Выберите кафедру</label>
-            <select v-model="departmentId" class="select-control">
-              <option value="">Выберите кафедру</option>
-              <option v-for="dept in departments" :key="dept.id" :value="dept.id">
-                {{ dept.name }}
-              </option>
-            </select>
-            <div v-if="departments.length === 0" class="error-text">
-              Нет доступных кафедр
-            </div>
-          </div>
-          <div class="form-group" v-if="entityType === 'discipline'">
-            <label>Выберите дисциплину</label>
-            <select v-model="disciplineId" class="select-control">
-              <option value="">Выберите дисциплину</option>
-              <option v-for="disc in disciplines" :key="disc.id" :value="disc.id">
-                {{ disc.name }}
-              </option>
-            </select>
-            <div v-if="disciplines.length === 0" class="error-text">
-              Нет доступных дисциплин
-            </div>
-          </div>
-          <div class="form-group" v-if="entityType === 'program'">
-            <label>Выберите образовательную программу</label>
-            <select v-model="programId" class="select-control">
-              <option value="">Выберите программу</option>
-              <option v-for="program in eduPrograms" :key="program.id" :value="program.id">
-                {{ program.name }} ({{ program.department_name }})
-              </option>
-            </select>
-            <div v-if="eduPrograms.length === 0" class="error-text">
-              Нет доступных программ
-            </div>
-          </div>
-          <div class="form-group" v-if="entityType === 'session'">
-            <label>Выберите сессию</label>
-            <select v-model="sessionId" class="select-control">
-              <option value="">Выберите сессию</option>
-              <option v-for="session in sessions" :key="session.id" :value="session.id">
-                {{ session.discipline_name }} - {{ session.session_date }} ({{ session.session_type }})
-              </option>
-            </select>
-            <div v-if="sessions.length === 0" class="error-text">
-              Нет доступных сессий
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="form-section">
-        <h3 class="section-title">Дополнительная информация</h3>
-        <div class="form-group">
-          <label>Описание документа (необязательно)</label>
-          <textarea
-            v-model="description"
-            class="form-control"
-            rows="3"
-            placeholder="Введите описание документа..."
-          ></textarea>
-        </div>
-      </div>
-      <div class="upload-progress" v-if="uploadProgress > 0">
-        <div class="progress-section">
-          <div class="progress-header">
-            <span>Прогресс загрузки</span>
-            <span>{{ uploadProgress }}%</span>
-          </div>
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              :style="{ width: uploadProgress + '%' }"
-            ></div>
-          </div>
-          <div class="progress-stats">
-            <span>{{ processedFiles }} из {{ selectedFiles.length }} файлов</span>
-            <span>{{ uploadProgress }}% загружено</span>
-          </div>
-        </div>
-      </div>
-      <div class="action-buttons">
-        <button
-          type="submit"
-          class="btn-primary"
-          :disabled="!selectedFiles.length || uploading || !documentTypeId"
-        >
-          <span v-if="uploading">
-            <span class="loading-spinner-small"></span> Загрузка...
-          </span>
-          <span v-else>Загрузить документы</span>
-        </button>
-        <button
-          type="button"
-          class="btn-secondary"
-          @click="resetForm"
-          :disabled="uploading"
-        >
-          Сбросить
-        </button>
-        <button
-          type="button"
-          class="btn-small"
-          @click="reloadData"
-          :disabled="loading"
-        >
-          <span v-if="loading">
-            <span class="loading-spinner-small"></span> Загрузка...
-          </span>
-          <span v-else>Обновить данные</span>
-        </button>
-      </div>
-    </form>
-    <div v-if="uploadResults.length > 0" class="upload-results mt-4">
-      <h3 class="section-title">Результаты загрузки</h3>
-      <div class="document-list-container">
-        <div class="document-item" v-for="result in uploadResults" :key="result.fileName">
-          <div class="document-header">
-            <span class="document-name">{{ result.fileName }}</span>
-            <span :class="'document-type ' + result.status">
-              {{ result.status === 'success' ? 'Успешно' : 'Ошибка' }}
+
+        <div class="action-buttons">
+          <button
+            type="submit"
+            class="btn-primary"
+            :disabled="!selectedFiles.length || uploading || !documentTypeId"
+          >
+            <span v-if="uploading">
+              <span class="loading-spinner-small"></span> Загрузка...
             </span>
-          </div>
-          <div class="document-info">
-            <span class="document-preview">{{ result.message }}</span>
-            <span v-if="result.documentId" class="matches-badge">
-              ID: {{ result.documentId }}
+            <span v-else>Загрузить документы</span>
+          </button>
+          <button
+            type="button"
+            class="btn-secondary"
+            @click="resetForm"
+            :disabled="uploading"
+          >
+            Сбросить
+          </button>
+          <button
+            type="button"
+            class="btn-small"
+            @click="reloadData"
+            :disabled="loading"
+          >
+            <span v-if="loading">
+              <span class="loading-spinner-small"></span> Загрузка...
             </span>
-            <span v-else class="no-matches">Нет ID</span>
+            <span v-else>Обновить данные</span>
+          </button>
+        </div>
+      </form>
+
+      <!-- Результаты загрузки -->
+      <div v-if="uploadResults.length > 0" class="upload-results mt-4">
+        <h3 class="section-title">Результаты загрузки</h3>
+        <div class="document-list-container">
+          <div class="document-item" v-for="result in uploadResults" :key="result.fileName">
+            <div class="document-header">
+              <span class="document-name">{{ result.fileName }}</span>
+              <span :class="'document-type ' + result.status">
+                {{ result.status === 'success' ? 'Успешно' : 'Ошибка' }}
+              </span>
+            </div>
+            <div class="document-info">
+              <span class="document-preview">{{ result.message }}</span>
+              <span v-if="result.documentId" class="matches-badge">
+                ID: {{ result.documentId }}
+              </span>
+              <span v-else class="no-matches">Нет ID</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue';
 import $api from '@/api';
 import router from '@/router';
 
-export default {
-  name: 'DocumentUpload',
-  data() {
-    return {
-      selectedFiles: [],
-      documentTypeId: '',
-      entityType: 'department',
-      departmentId: '',
-      disciplineId: '',
-      programId: '',
-      sessionId: '',
-      description: '',
-      uploading: false,
-      uploadProgress: 0,
-      processedFiles: 0,
-      uploadResults: [],
-      // Данные для выпадающих списков
-      documentTypes: [],
-      departments: [],
-      disciplines: [],
-      eduPrograms: [],
-      sessions: [],
-      // Данные пользователя
-      userName: 'Студент',
-      unreadNotifications: 0,
-      // Отладка
-      debugInfo: true,
-      showDebug: false,
-      debugData: {},
-      loading: false,
-      errors: []
-    }
-  },
-  async created() {
-    await this.loadReferenceData();
-    this.loadUserData();
-  },
-  methods: {
-    async loadReferenceData() {
-      this.loading = true;
-      this.errors = [];
-      
-      try {
-        // Определяем базовый URL API
-        const baseURL = process.env.VUE_APP_API_URL || '';
-        
-        // Создаем массив промисов для параллельной загрузки
-        const requests = [
-          this.fetchData('/documentType', 'documentTypes'),
-          this.fetchData('/department', 'departments'),
-          this.fetchData('/discipline', 'disciplines'),
-          this.fetchData('/eduProgramm', 'eduPrograms'),
-          this.fetchData('/session', 'sessions')
-        ];
-        
-        await Promise.all(requests);
-        
-        // Сохраняем отладочные данные
-        this.debugData = {
-          documentTypes: this.documentTypes,
-          departments: this.departments,
-          disciplines: this.disciplines,
-          eduPrograms: this.eduPrograms,
-          sessions: this.sessions,
-          baseURL,
-          timestamp: new Date().toISOString()
-        };
-        
-        console.log('Данные успешно загружены:', this.debugData);
-        
-      } catch (error) {
-        console.error('Ошибка загрузки справочных данных:', error);
-        this.errors.push('Не удалось загрузить справочные данные');
-        this.showError('Не удалось загрузить справочные данных. Проверьте консоль для деталей.');
-      } finally {
-        this.loading = false;
-      }
-    },
-    
-    // DocumentUpload.vue
-async fetchData(endpoint, dataKey) {
+// Данные из БД
+const documentTypes = ref([]);
+const departments = ref([]);
+const disciplines = ref([]);
+const eduPrograms = ref([]);
+const sessions = ref([]);
+
+// Состояния загрузки
+const loading = ref(true);
+const documentTypesLoading = ref(false);
+const departmentsLoading = ref(false);
+const disciplinesLoading = ref(false);
+const eduProgramsLoading = ref(false);
+const sessionsLoading = ref(false);
+
+// Фильтры и поиск
+const searchQuery = ref('');
+const selectedDocumentType = ref('');
+const selectedDepartment = ref('');
+const selectedDiscipline = ref('');
+const selectedProgram = ref('');
+const selectedSession = ref('');
+
+// Пагинация
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
+// Статистика
+const stats = ref({
+  documentTypes: 0,
+  departments: 0,
+  disciplines: 0,
+  eduPrograms: 0,
+  sessions: 0
+});
+
+// Данные формы
+const selectedFiles = ref([]);
+const documentTypeId = ref('');
+const entityType = ref('department');
+const departmentId = ref('');
+const disciplineId = ref('');
+const programId = ref('');
+const sessionId = ref('');
+const description = ref('');
+const uploading = ref(false);
+const uploadProgress = ref(0);
+const processedFiles = ref(0);
+const uploadResults = ref([]);
+
+// Отладка
+const debugInfo = ref(true);
+const showDebug = ref(false);
+const debugData = ref({});
+
+// Данные пользователя
+const userName = ref('Администратор');
+const unreadNotifications = ref(0);
+
+// Загрузка типов документов из БД
+const fetchDocumentTypes = async () => {
+  documentTypesLoading.value = true;
   try {
-    console.log(`Запрос данных с эндпоинта: ${endpoint}`);
-    const response = await $api.get(endpoint); // $api уже знает базовый URL
-    
-    // Проверяем, что в ответе есть данные и это массив
-    if (response.data && Array.isArray(response.data)) {
-      this[dataKey] = response.data;
-      console.log(`Успешно загружено ${this[dataKey].length} записей для "${dataKey}"`);
-    } else {
-      console.warn(`Получен неожиданный формат данных для "${dataKey}":`, response.data);
-      this[dataKey] = []; // Устанавливаем пустой массив в случае неверного формата
-    }
+    const response = await $api.get('/documentType');
+    documentTypes.value = response.data;
+    console.log('Типы документов загружены:', documentTypes.value);
   } catch (error) {
-    console.error(`Ошибка при загрузке данных для "${dataKey}" с эндпоинта ${endpoint}:`, error);
-    this.errors.push(`Не удалось загрузить данные для ${dataKey}`);
-    this[dataKey] = []; // Устанавливаем пустой массив в случае ошибки
+    console.error('Ошибка загрузки типов документов:', error);
+    // Запасные данные на случай ошибки
+    documentTypes.value = [
+      { id: 'uuid-1', name: 'Лекция', code: 'lecture' },
+      { id: 'uuid-2', name: 'Практика', code: 'practice' },
+      { id: 'uuid-3', name: 'Лабораторная работа', code: 'lab' },
+      { id: 'uuid-4', name: 'Методичка', code: 'method' }
+    ];
+  } finally {
+    documentTypesLoading.value = false;
   }
-}
-,
+};
+
+// Загрузка кафедр из БД
+const fetchDepartments = async () => {
+  departmentsLoading.value = true;
+  try {
+    const response = await $api.get('/department');
+    departments.value = response.data;
+    console.log('Кафедры загружены:', departments.value);
+  } catch (error) {
+    console.error('Ошибка загрузки кафедр:', error);
+    departments.value = [
+      { id: 'uuid-dept-1', name: 'Кафедра информатики' },
+      { id: 'uuid-dept-2', name: 'Кафедра математики' },
+      { id: 'uuid-dept-3', name: 'Кафедра физики' }
+    ];
+  } finally {
+    departmentsLoading.value = false;
+  }
+};
+
+// Загрузка дисциплин из БД
+const fetchDisciplines = async () => {
+  disciplinesLoading.value = true;
+  try {
+    const response = await $api.get('/discipline');
+    disciplines.value = response.data;
+    console.log('Дисциплины загружены:', disciplines.value);
+  } catch (error) {
+    console.error('Ошибка загрузки дисциплин:', error);
+    disciplines.value = [
+      { id: 'uuid-disc-1', name: 'Программирование' },
+      { id: 'uuid-disc-2', name: 'Математический анализ' },
+      { id: 'uuid-disc-3', name: 'Физика' }
+    ];
+  } finally {
+    disciplinesLoading.value = false;
+  }
+};
+
+// Загрузка образовательных программ из БД
+const fetchEduPrograms = async () => {
+  eduProgramsLoading.value = true;
+  try {
+    const response = await $api.get('/eduProgramm');
+    eduPrograms.value = response.data;
+    console.log('Образовательные программы загружены:', eduPrograms.value);
+  } catch (error) {
+    console.error('Ошибка загрузки образовательных программ:', error);
+    eduPrograms.value = [
+      { id: 'uuid-prog-1', name: 'Информационные системы', department_name: 'Кафедра информатики' },
+      { id: 'uuid-prog-2', name: 'Прикладная математика', department_name: 'Кафедра математики' },
+      { id: 'uuid-prog-3', name: 'Физика и технологии', department_name: 'Кафедра физики' }
+    ];
+  } finally {
+    eduProgramsLoading.value = false;
+  }
+};
+
+// Загрузка сессий из БД
+const fetchSessions = async () => {
+  sessionsLoading.value = true;
+  try {
+    const response = await $api.get('/session');
+    sessions.value = response.data;
+    console.log('Сессии загружены:', sessions.value);
+  } catch (error) {
+    console.error('Ошибка загрузки сессий:', error);
+    sessions.value = [
+      { id: 'uuid-sess-1', discipline_name: 'Программирование', session_date: '2024-01-15', session_type: 'Экзамен' },
+      { id: 'uuid-sess-2', discipline_name: 'Математический анализ', session_date: '2024-01-20', session_type: 'Зачет' },
+      { id: 'uuid-sess-3', discipline_name: 'Физика', session_date: '2024-01-25', session_type: 'Экзамен' }
+    ];
+  } finally {
+    sessionsLoading.value = false;
+  }
+};
+
+// Загрузка всех данных
+const fetchAllData = async () => {
+  loading.value = true;
+  try {
+    await Promise.all([
+      fetchDocumentTypes(),
+      fetchDepartments(),
+      fetchDisciplines(),
+      fetchEduPrograms(),
+      fetchSessions()
+    ]);
+    calculateStats();
     
-    async reloadData() {
-      await this.loadReferenceData();
-      if (this.errors.length === 0) {
-        this.showSuccess('Данные успешно обновлены');
+    // Сохраняем отладочные данные
+    debugData.value = {
+      documentTypes: documentTypes.value,
+      departments: departments.value,
+      disciplines: disciplines.value,
+      eduPrograms: eduPrograms.value,
+      sessions: sessions.value,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('Все данные успешно загружены:', debugData.value);
+  } catch (error) {
+    console.error('Ошибка загрузки всех данных:', error);
+    alert('Ошибка при загрузке данных');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Расчет статистики
+const calculateStats = () => {
+  stats.value = {
+    documentTypes: documentTypes.value.length,
+    departments: departments.value.length,
+    disciplines: disciplines.value.length,
+    eduPrograms: eduPrograms.value.length,
+    sessions: sessions.value.length
+  };
+};
+
+// Опции для фильтров
+const documentTypeOptions = computed(() => {
+  return [
+    { value: '', label: 'Все типы' },
+    ...documentTypes.value.map(type => ({
+      value: type.id,
+      label: type.name
+    }))
+  ];
+});
+
+const departmentOptions = computed(() => {
+  return [
+    { value: '', label: 'Все кафедры' },
+    ...departments.value.map(dept => ({
+      value: dept.id,
+      label: dept.name
+    }))
+  ];
+});
+
+const disciplineOptions = computed(() => {
+  return [
+    { value: '', label: 'Все дисциплины' },
+    ...disciplines.value.map(disc => ({
+      value: disc.id,
+      label: disc.name
+    }))
+  ];
+});
+
+const programOptions = computed(() => {
+  return [
+    { value: '', label: 'Все программы' },
+    ...eduPrograms.value.map(prog => ({
+      value: prog.id,
+      label: `${prog.name} (${prog.department_name})`
+    }))
+  ];
+});
+
+const sessionOptions = computed(() => {
+  return [
+    { value: '', label: 'Все сессии' },
+    ...sessions.value.map(sess => ({
+      value: sess.id,
+      label: `${sess.discipline_name} - ${sess.session_date} (${sess.session_type})`
+    }))
+  ];
+});
+
+// Вспомогательные функции
+const getDocumentTypeName = (typeId) => {
+  if (!typeId) return 'Без типа';
+  const type = documentTypes.value.find(t => t.id === typeId);
+  return type ? type.name : `Тип: ${typeId.substring(0, 8)}...`;
+};
+
+const getDepartmentName = (deptId) => {
+  if (!deptId) return 'Без кафедры';
+  const dept = departments.value.find(d => d.id === deptId);
+  return dept ? dept.name : `Кафедра: ${deptId.substring(0, 8)}...`;
+};
+
+const getDisciplineName = (discId) => {
+  if (!discId) return 'Без дисциплины';
+  const disc = disciplines.value.find(d => d.id === discId);
+  return disc ? disc.name : `Дисциплина: ${discId.substring(0, 8)}...`;
+};
+
+const getProgramName = (progId) => {
+  if (!progId) return 'Без программы';
+  const prog = eduPrograms.value.find(p => p.id === progId);
+  return prog ? `${prog.name} (${prog.department_name})` : `Программа: ${progId.substring(0, 8)}...`;
+};
+
+const getSessionInfo = (sessId) => {
+  if (!sessId) return 'Без сессии';
+  const sess = sessions.value.find(s => s.id === sessId);
+  return sess ? `${sess.discipline_name} - ${sess.session_date} (${sess.session_type})` : `Сессия: ${sessId.substring(0, 8)}...`;
+};
+
+// Методы формы
+const handleFileSelect = (event) => {
+  selectedFiles.value = Array.from(event.target.files);
+};
+
+// Вспомогательные методы для проверки
+const getSelectedEntityId = () => {
+  switch (entityType.value) {
+    case 'department': return departmentId.value;
+    case 'discipline': return disciplineId.value;
+    case 'program': return programId.value;
+    case 'session': return sessionId.value;
+    default: return '';
+  }
+};
+
+const getEntityTypeName = () => {
+  switch (entityType.value) {
+    case 'department': return 'кафедру';
+    case 'discipline': return 'дисциплину';
+    case 'program': return 'образовательную программу';
+    case 'session': return 'сессию';
+    default: return 'сущность';
+  }
+};
+
+
+
+const uploadDocument = async () => {
+  if (!selectedFiles.value.length) {
+    showError('Выберите хотя бы один файл');
+    return;
+  }
+  if (!documentTypeId.value) {
+    showError('Выберите тип документа');
+    return;
+  }
+
+  // Проверка привязки к сущности - исправленная логика
+  let entityCount = 0;
+  let selectedEntityId = '';
+  let selectedEntityField = '';
+  
+  // Проверяем только выбранный тип сущности
+  switch (entityType.value) {
+    case 'department':
+      if (departmentId.value) {
+        entityCount = 1;
+        selectedEntityId = departmentId.value;
+        selectedEntityField = 'department_id';
       }
-    },
-    
-    loadUserData() {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        this.userName = user.name || 'Студент';
-        this.unreadNotifications = user.unreadNotifications || 0;
-      } catch (error) {
-        console.error('Ошибка загрузки данных пользователя:', error);
+      break;
+    case 'discipline':
+      if (disciplineId.value) {
+        entityCount = 1;
+        selectedEntityId = disciplineId.value;
+        selectedEntityField = 'discipline_id';
       }
-    },
-    
-    handleFileSelect(event) {
-      this.selectedFiles = Array.from(event.target.files);
-    },
-    
-    async uploadDocument() {
-      if (!this.selectedFiles.length) {
-        this.showError('Выберите хотя бы один файл');
-        return;
+      break;
+    case 'program':
+      if (programId.value) {
+        entityCount = 1;
+        selectedEntityId = programId.value;
+        selectedEntityField = 'edu_program_id';
+      }
+      break;
+    case 'session':
+      if (sessionId.value) {
+        entityCount = 1;
+        selectedEntityId = sessionId.value;
+        selectedEntityField = 'session_id';
+      }
+      break;
+  }
+
+  console.log('Проверка сущности:', {
+    entityType: entityType.value,
+    entityCount,
+    selectedEntityId,
+    selectedEntityField
+  });
+
+  if (entityCount !== 1) {
+    showError(`Выберите ${getEntityTypeName()} для привязки документа`);
+    return;
+  }
+
+  uploading.value = true;
+  uploadProgress.value = 0;
+  processedFiles.value = 0;
+  uploadResults.value = [];
+  const totalFiles = selectedFiles.value.length;
+
+  for (const file of selectedFiles.value) {
+    try {
+      const formData = new FormData();
+      
+      // Обязательные поля - проверяем, что они не пустые
+      if (!file.name) {
+        throw new Error('Имя файла не может быть пустым');
+      }
+      if (!documentTypeId.value) {
+        throw new Error('Тип документа не выбран');
       }
       
-      if (!this.documentTypeId) {
-        this.showError('Выберите тип документа');
-        return;
+      formData.append('name', file.name);
+      formData.append('type_id', documentTypeId.value);
+      formData.append('doc', file);
+
+      // Опциональное описание
+      if (description.value) {
+        formData.append('description', description.value);
       }
-      
-      this.uploading = true;
-      this.uploadProgress = 0;
-      this.processedFiles = 0;
-      this.uploadResults = [];
-      
-      const totalFiles = this.selectedFiles.length;
-      
-      for (const file of this.selectedFiles) {
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-          formData.append('typeId', this.documentTypeId);
-          formData.append('description', this.description);
-          
-          // Добавляем привязку к сущности
-          switch (this.entityType) {
-            case 'department':
-              if (this.departmentId) formData.append('departmentId', this.departmentId);
-              break;
-            case 'discipline':
-              if (this.disciplineId) formData.append('disciplineId', this.disciplineId);
-              break;
-            case 'program':
-              if (this.programId) formData.append('eduProgramId', this.programId);
-              break;
-            case 'session':
-              if (this.sessionId) formData.append('sessionId', this.sessionId);
-              break;
-          }
-          
-          console.log('Отправка файла:', file.name, 'FormData:', Object.fromEntries(formData));
-          
-          const response = await $api.post('/documents/upload', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-          
-          console.log('Ответ от сервера:', response.data);
-          
-          this.uploadResults.push({
-            fileName: file.name,
-            status: 'success',
-            message: 'Файл успешно загружен',
-            documentId: response.data.documentId || response.data.id || 'N/A'
-          });
-          
-        } catch (error) {
-          console.error('Ошибка загрузки файла:', error);
-          const errorMessage = error.response?.data?.error || 
-                              error.response?.data?.message || 
-                              error.message || 
-                              'Ошибка загрузки';
-          
-          this.uploadResults.push({
-            fileName: file.name,
-            status: 'error',
-            message: errorMessage,
-            documentId: null
-          });
+
+      // Добавляем привязку к сущности
+      if (selectedEntityId && selectedEntityField) {
+        formData.append(selectedEntityField, selectedEntityId);
+      }
+
+      // Детальная отладка FormData
+      console.log('=== Детальная отладка FormData ===');
+      console.log('Файл:', file.name, 'Размер:', file.size, 'Тип:', file.type);
+      console.log('Поля FormData:');
+      for (let [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`${key}: File - ${value.name} (${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`${key}: ${value}`);
         }
-        
-        this.processedFiles++;
-        this.uploadProgress = Math.round((this.processedFiles / totalFiles) * 100);
       }
+
+      // Проверяем, что все обязательные поля есть
+      const hasName = formData.has('name');
+      const hasTypeId = formData.has('type_id');
+      const hasDoc = formData.has('doc');
+      const hasEntity = formData.has(selectedEntityField);
       
-      this.uploading = false;
-      
-      // Показываем общий результат
-      const successCount = this.uploadResults.filter(r => r.status === 'success').length;
-      if (successCount === totalFiles) {
-        this.showSuccess(`Все ${totalFiles} файлов успешно загружены`);
-        this.resetForm();
-      } else if (successCount > 0) {
-        this.showWarning(`Загружено ${successCount} из ${totalFiles} файлов`);
-      } else {
-        this.showError('Не удалось загрузить ни одного файла');
+      console.log('Проверка полей:', {
+        hasName,
+        hasTypeId,
+        hasDoc,
+        hasEntity,
+        entityField: selectedEntityField
+      });
+
+      if (!hasName || !hasTypeId || !hasDoc || !hasEntity) {
+        throw new Error('Не все обязательные поля заполнены');
       }
-    },
-    
-    resetForm() {
-      this.selectedFiles = [];
-      this.documentTypeId = '';
-      this.entityType = 'department';
-      this.departmentId = '';
-      this.disciplineId = '';
-      this.programId = '';
-      this.sessionId = '';
-      this.description = '';
-      this.uploadResults = [];
-      this.uploadProgress = 0;
-      this.processedFiles = 0;
+
+      // Отправляем запрос
+      console.log('Отправка запроса на /documentAttachment...');
+      const response = await $api.post('/documentAttachment', formData, {
+       
+        timeout: 30000 // Увеличиваем таймаут для больших файлов
+      });
+
+      console.log('✅ Ответ от сервера:', response.data);
+      uploadResults.value.push({
+        fileName: file.name,
+        status: 'success',
+        message: 'Файл успешно загружен',
+        documentId: response.data.id
+      });
+    } catch (error) {
+      console.error('❌ Ошибка загрузки файла:', error);
+      console.error('Статус ошибки:', error.response?.status);
+      console.error('Данные ошибки:', error.response?.data);
+      console.error('Заголовки запроса:', error.config?.headers);
+      console.error('URL запроса:', error.config?.url);
+      console.error('Метод запроса:', error.config?.method);
       
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = '';
-      }
-    },
-    
-    toggleDebug() {
-      this.showDebug = !this.showDebug;
-    },
-    
-    // Методы для header
-    toggleSearch() {
-      console.log('Поиск');
-    },
-    
-    toggleNotifications() {
-      router.push('/student/notifications');
-    },
-    
-    openChat() {
-      router.push('/student/chat');
-    },
-    
-    showError(message) {
-      alert(`Ошибка: ${message}`);
-    },
-    
-    showSuccess(message) {
-      alert(`Успех: ${message}`);
-    },
-    
-    showWarning(message) {
-      alert(`Внимание: ${message}`);
+      const errorMessage = error.response?.data?.error ||
+                          error.response?.data?.message ||
+                          error.message ||
+                          'Ошибка загрузки';
+      uploadResults.value.push({
+        fileName: file.name,
+        status: 'error',
+        message: errorMessage,
+        documentId: null
+      });
     }
+
+    processedFiles.value++;
+    uploadProgress.value = Math.round((processedFiles.value / totalFiles) * 100);
   }
-}
+
+  uploading.value = false;
+  
+  // Показываем общий результат
+  const successCount = uploadResults.value.filter(r => r.status === 'success').length;
+  if (successCount === totalFiles) {
+    showSuccess(`Все ${totalFiles} файлов успешно загружены`);
+    resetForm();
+  } else if (successCount > 0) {
+    showWarning(`Загружено ${successCount} из ${totalFiles} файлов`);
+  } else {
+    showError('Не удалось загрузить ни одного файла');
+  }
+};
+
+
+
+const resetForm = () => {
+  selectedFiles.value = [];
+  documentTypeId.value = '';
+  entityType.value = 'department';
+  departmentId.value = '';
+  disciplineId.value = '';
+  programId.value = '';
+  sessionId.value = '';
+  description.value = '';
+  uploadResults.value = [];
+  uploadProgress.value = 0;
+  processedFiles.value = 0;
+  if (fileInput.value) {
+    fileInput.value.value = '';
+  }
+};
+
+const reloadData = async () => {
+  await fetchAllData();
+  if (!loading.value) {
+    showSuccess('Данные успешно обновлены');
+  }
+};
+
+const toggleDebug = () => {
+  showDebug.value = !showDebug.value;
+};
+
+// Методы для header
+const toggleSearch = () => {
+  console.log('Поиск');
+};
+
+const toggleNotifications = () => {
+  router.push('/student/notifications');
+};
+
+const openChat = () => {
+  router.push('/student/chat');
+};
+
+const loadUserData = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    userName.value = user.name || 'Студент';
+    unreadNotifications.value = user.unreadNotifications || 0;
+  } catch (error) {
+    console.error('Ошибка загрузки данных пользователя:', error);
+  }
+};
+
+// Вспомогательные методы для уведомлений
+
+const showError = (message) => {
+  // Используйте toast или модальное окно вместо alert
+  console.error('Ошибка:', message);
+  alert(`❌ Ошибка: ${message}`);
+};
+
+const showSuccess = (message) => {
+  console.log('Успех:', message);
+  alert(`✅ ${message}`);
+};
+
+const showWarning = (message) => {
+  console.warn('Предупреждение:', message);
+  alert(`⚠️ ${message}`);
+};
+
+
+
+// Загрузка данных при монтировании
+onMounted(async () => {
+  await fetchAllData();
+  loadUserData();
+});
+
+// Ссылка на input файла
+const fileInput = ref(null);
+
+// Сброс пагинации при изменении фильтров
+watch([searchQuery, selectedDocumentType, selectedDepartment, selectedDiscipline, selectedProgram, selectedSession], () => {
+  currentPage.value = 1;
+});
 </script>
+
+
 
 <style scoped>
 /* Стили компонента */

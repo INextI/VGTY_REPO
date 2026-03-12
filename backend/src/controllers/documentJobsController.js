@@ -1,26 +1,36 @@
 // backend/src/controllers/documentJobsController.js
 const documentService = require('../services/documentService');
 const db = require('../config/db');
-const { Queue } = require('bullmq');
+const DocumentEditJob = require('../models/documentEditJobs');
+const DocumentEditJobLog = require('../models/documentEditJobLogs');
+const DocumentAttachment = require('../models/documentAttachments');
+//const { Queue } = require('bullmq'); функция очередей
 
 // Создаем очередь для обработки заданий
-const documentEditQueue = new Queue('document-edit-queue', {
-    connection: {
-        host: process.env.REDIS_HOST || "localhost",
-        port: process.env.REDIS_PORT || 6379
-    }
-});
+// const documentEditQueue = new Queue('document-edit-queue', {
+//     connection: {
+//         host: process.env.REDIS_HOST || "localhost",
+//         port: process.env.REDIS_PORT || 6379
+//     }
+// });
 
 class DocumentJobsController {
     /**
      * Создание нового задания на массовое редактирование
      */
+
     async createJob(req, res) {
-        try {
-            const { searchText, replaceText, filters } = req.body;
-            const employeeId = req.user.id; // Из middleware аутентификации
-            
-            // Валидация входных данных
+    try {
+        const { searchText, replaceText, filters } = req.body;
+        const userId = req.user.id;
+        // Находим сотрудника по user_id
+        const employeeResult = await db.query(
+            `SELECT id FROM employees WHERE user_id = :userId`,
+            { replacements: { userId }, type: db.QueryTypes.SELECT }
+        );
+        
+        //const employeeId = req.user.user_id; // Из middleware аутентификации
+        // Валидация входных данных
             if (!searchText || searchText.trim() === '') {
                 return res.status(400).json({
                     error: 'Текст для поиска не может быть пустым'
@@ -32,47 +42,43 @@ class DocumentJobsController {
                     error: 'Необходимо указать хотя бы один фильтр для поиска документов'
                 });
             }
-            
-            // Проверяем, есть ли документы по указанным фильтрам
-            const documents = await documentService.findDocumentsByCriteria(filters);
-            
-            if (documents.length === 0) {
-                return res.status(404).json({
-                    error: 'По указанным фильтрам документы не найдены'
-                });
+
+        const documents = await documentService.findDocumentsByCriteria(filters);
+        
+        if (documents.length === 0) {
+            return res.status(404).json({ error: 'Документы не найдены' });
+        }
+        // Извлекаем ID сотрудника из результата
+        const employeeId = employeeResult[0].id;
+        // Создаем запись в таблице заданий
+        const [jobResult] = await db.query(
+            `INSERT INTO document_edit_jobs 
+             (id, search_text, replace_text, filter_criteria, created_by_employee_id, total_count, status, created_at)
+             VALUES (gen_random_uuid(), :searchText, :replaceText, :filters, :employeeId, :total, 'pending', NOW()) 
+             RETURNING id, created_at, status`,
+            {
+                replacements: { 
+                    searchText, 
+                    replaceText, 
+                    filters: JSON.stringify(filters), 
+                    employeeId, 
+                    total: documents.length 
+                },
+                type: db.QueryTypes.INSERT
             }
-            
-            // Создаем запись в таблице заданий
-            const jobResult = await db.query(
-                `INSERT INTO document_edit_jobs 
-                 (search_text, replace_text, filter_criteria, created_by_employee_id, total_count)
-                 VALUES ($1, $2, $3, $4, $5) 
-                 RETURNING id, created_at, status`,
-                [searchText, replaceText, filters, employeeId, documents.length]
-            );
-            
-            const jobId = jobResult.rows[0].id;
-            
-            // Добавляем задачу в очередь
-            await documentEditQueue.add('process-job', { jobId }, {
-                jobId: jobId.toString(),
-                attempts: 3,
-                backoff: {
-                    type: 'exponential',
-                    delay: 5000
-                }
-            });
-            
-            // Возвращаем информацию о созданном задании
-            res.status(202).json({
-                message: 'Задание принято в обработку',
-                jobId,
-                totalDocuments: documents.length,
-                createdAt: jobResult.rows[0].created_at,
-                status: jobResult.rows[0].status
-            });
-            
-        } catch (error) {
+        );
+
+        const jobId = jobResult[0].id;
+         
+// Возвращаем информацию о созданном задании
+        res.status(202).json({
+        message: 'Задание принято',
+        jobId: jobId,
+        totalDocuments: documents.length,
+        status: 'pending',
+        created_at: jobResult[0].created_at
+        });
+    } catch (error) {
             console.error('Ошибка при создании задания:', error);
             res.status(500).json({
                 error: 'Внутренняя ошибка сервера',
@@ -85,134 +91,126 @@ class DocumentJobsController {
      * Предпросмотр изменений перед запуском задания
      */
     async previewJob(req, res) {
-        try {
-            const { searchText, filters } = req.body;
+        console.log('>>> [CONTROLLER] Начало previewJob');
+    try {
+        const { searchText, filters } = req.body;
+        console.log('Параметры из body:', { searchText, filtersCount: Object.keys(filters).length });
+
+        const previewResults = await documentService.previewChanges(searchText, filters);
+        console.log(`[CONTROLLER] Получено результатов из сервиса: ${previewResults.length}`);
+
+        const statistics = {
+            totalDocuments: previewResults.length,
+            totalMatches: previewResults.reduce((sum, doc) => sum + doc.matches, 0),
+            documentsWithMatches: previewResults.filter(doc => doc.matches > 0).length,
+        };
+        statistics.documentsWithoutMatches = statistics.totalDocuments - statistics.documentsWithMatches;
+
+        res.json({ searchText, filters, statistics, documents: previewResults });
+    } catch (error) {
+        console.error('!!! [CONTROLLER] Ошибка в previewJob:', error);
+        res.status(500).json({
+            error: 'Ошибка при предпросмотре изменений',
+            details: error.message
+        });
+    }
+
+
+
+
+    // try {
+    //     const { searchText, filters } = req.body;
+    //      if (!searchText || searchText.trim() === '') {
+    //             return res.status(400).json({
+    //                 error: 'Текст для поиска не может быть пустым'
+    //             });
+    //         }
             
-            if (!searchText || searchText.trim() === '') {
-                return res.status(400).json({
-                    error: 'Текст для поиска не может быть пустым'
-                });
-            }
-            
-            if (!filters || Object.keys(filters).length === 0) {
-                return res.status(400).json({
-                    error: 'Необходимо указать фильтры для поиска'
-                });
-            }
-            
-            // Получаем предпросмотр изменений
-            const previewResults = await documentService.previewChanges(searchText, filters);
-            
-            // Получаем общую статистику
-            const totalDocuments = previewResults.length;
-            const totalMatches = previewResults.reduce((sum, doc) => sum + doc.matches, 0);
-            const documentsWithMatches = previewResults.filter(doc => doc.matches > 0).length;
-            
-            res.json({
-                searchText,
-                filters,
-                statistics: {
-                    totalDocuments,
-                    totalMatches,
-                    documentsWithMatches,
-                    documentsWithoutMatches: totalDocuments - documentsWithMatches
-                },
-                documents: previewResults
-            });
-            
-        } catch (error) {
-            console.error('Ошибка при предпросмотре:', error);
-            res.status(500).json({
-                error: 'Ошибка при предпросмотре изменений',
-                details: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
-        }
+    //         if (!filters || Object.keys(filters).length === 0) {
+    //             return res.status(400).json({
+    //                 error: 'Необходимо указать фильтры для поиска'
+    //             });
+    //         }
+    //     // Получаем предпросмотр изменений
+    //     const previewResults = await documentService.previewChanges(searchText, filters);
+    //     // Получаем общую статистику
+    //     const statistics = {
+    //         totalDocuments: previewResults.length,
+    //         totalMatches: previewResults.reduce((sum, doc) => sum + doc.matches, 0),
+    //         documentsWithMatches: previewResults.filter(doc => doc.matches > 0).length,
+    //     };
+    //     statistics.documentsWithoutMatches = statistics.totalDocuments - statistics.documentsWithMatches;
+
+    //     res.json({ searchText, filters, statistics, documents: previewResults });
+    // } catch (error) {
+    //         console.error('Ошибка при предпросмотре:', error);
+    //         res.status(500).json({
+    //             error: 'Ошибка при предпросмотре изменений',
+    //             details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    //         });
+    //     }
     }
     
     /**
      * Получение статуса выполнения задания
      */
     async getJobStatus(req, res) {
-        try {
-            const { id } = req.params;
-            
-            // Получаем информацию о задании
-            const jobResult = await db.query(
-                `SELECT 
-                    id, search_text, replace_text, filter_criteria,
-                    status, created_at, started_at, completed_at,
-                    created_by_employee_id, total_count, processed_count,
-                    success_count, failed_count, skipped_count, error_message
-                 FROM document_edit_jobs 
-                 WHERE id = $1`,
-                [id]
-            );
-            
-            if (jobResult.rows.length === 0) {
-                return res.status(404).json({
-                    error: 'Задание не найдено'
-                });
+  try {
+    const { id } = req.params;
+    
+    // Используем модель Sequelize с правильными алиасами
+    const job = await DocumentEditJob.findOne({
+      where: { id },
+      include: [
+        { 
+          model: DocumentEditJobLog,
+          as: 'logs', // Алиас из определения ассоциации
+          include: [
+            { 
+              model: DocumentAttachment,
+              as: 'document', // Алиас из определения ассоциации
+              attributes: ['name']
             }
-            
-            const job = jobResult.rows[0];
-            
-            // Получаем логи обработки документов
-            const logsResult = await db.query(
-                `SELECT 
-                    l.id, l.document_attachment_id, l.status, l.message, l.created_at,
-                    da.name as document_name, dt.name as document_type
-                 FROM document_edit_job_logs l
-                 JOIN document_attachments da ON l.document_attachment_id = da.id
-                 JOIN document_types dt ON da.type_id = dt.id
-                 WHERE l.job_id = $1
-                 ORDER BY l.created_at DESC
-                 LIMIT 100`,
-                [id]
-            );
-            
-            // Рассчитываем прогресс
-            let progress = 0;
-            if (job.total_count > 0) {
-                progress = Math.round((job.processed_count || 0) / job.total_count * 100);
-            }
-            
-            // Формируем ответ
-            const response = {
-                jobId: job.id,
-                searchText: job.search_text,
-                replaceText: job.replace_text,
-                filters: job.filter_criteria,
-                status: job.status,
-                timestamps: {
-                    created: job.created_at,
-                    started: job.started_at,
-                    completed: job.completed_at
-                },
-                statistics: {
-                    total: job.total_count,
-                    processed: job.processed_count || 0,
-                    success: job.success_count || 0,
-                    failed: job.failed_count || 0,
-                    skipped: job.skipped_count || 0
-                },
-                progress: {
-                    percentage: progress,
-                    processed: job.processed_count || 0,
-                    total: job.total_count
-                },
-                error: job.error_message,
-                logs: logsResult.rows
-            };
-            
-            res.json(response);
-            
-        } catch (error) {
-            console.error('Ошибка при получении статуса задания:', error);
-            res.status(500).json({
-                error: 'Ошибка при получении статуса задания'
-            });
+          ]
         }
+      ]
+    });
+
+    if (!job) {
+      return res.status(404).json({ error: 'Задание не найдено' });
     }
+
+    // Преобразуем в JSON для работы
+    const jobData = job.toJSON();
+    
+    res.json({
+      jobId: jobData.id,
+      status: jobData.status,
+      statistics: {
+        total: jobData.total_count || 0,
+        success: jobData.success_count || 0,
+        failed: jobData.failed_count || 0
+      },
+      progress: {
+        percentage: jobData.total_count > 0 
+          ? Math.round((jobData.processed_count || 0) / jobData.total_count * 100) 
+          : 0,
+        processed: jobData.processed_count || 0,
+        total: jobData.total_count || 0
+      },
+      logs: jobData.logs || [], // Теперь logs вместо document_edit_job_logs
+      createdAt: jobData.created_at,
+      updatedAt: jobData.updated_at
+    });
+    
+  } catch (error) {
+    console.error('Ошибка при получении статуса задания:', error);
+    res.status(500).json({ 
+      error: 'Ошибка при получении статуса задания', 
+      details: error.message 
+    });
+  }
+}
     
     /**
      * Получение списка всех заданий
@@ -307,15 +305,7 @@ class DocumentJobsController {
                 [id]
             );
             
-            // Пытаемся удалить задание из очереди
-            try {
-                const job = await documentEditQueue.getJob(id);
-                if (job) {
-                    await job.remove();
-                }
-            } catch (queueError) {
-                console.warn('Не удалось удалить задание из очереди:', queueError);
-            }
+           
             
             res.json({
                 message: 'Задание успешно отменено',
@@ -432,30 +422,22 @@ class DocumentJobsController {
      */
     async getFilterData(req, res) {
         try {
-            // Получаем все возможные фильтры
-            const [
-                departments,
-                disciplines,
-                documentTypes,
-                eduPrograms
-            ] = await Promise.all([
-                db.query('SELECT id, name FROM departments ORDER BY name'),
-                db.query('SELECT id, name FROM disciplines ORDER BY name'),
-                db.query('SELECT id, name FROM document_types ORDER BY name'),
-                db.query(`
-                    SELECT ep.id, ep.name, d.name as department_name 
-                    FROM edu_programs ep
-                    JOIN departments d ON ep.department_id = d.id
-                    ORDER BY d.name, ep.name
-                `)
-            ]);
-            
-            res.json({
-                departments: departments.rows,
-                disciplines: disciplines.rows,
-                documentTypes: documentTypes.rows,
-                eduPrograms: eduPrograms.rows
-            });
+             const departments = await db.query('SELECT id, name FROM departments ORDER BY name', { type: db.QueryTypes.SELECT });
+        const disciplines = await db.query('SELECT id, name FROM disciplines ORDER BY name', { type: db.QueryTypes.SELECT });
+        const documentTypes = await db.query('SELECT id, name FROM document_types ORDER BY name', { type: db.QueryTypes.SELECT });
+        const eduPrograms = await db.query(
+            `SELECT ep.id, ep.name, d.name as department_name 
+             FROM edu_programs ep
+             JOIN departments d ON ep.department_id = d.id`,
+            { type: db.QueryTypes.SELECT }
+        );
+        
+        res.json({
+            departments,
+            disciplines,
+            documentTypes,
+            eduPrograms
+        });
             
         } catch (error) {
             console.error('Ошибка при получении данных фильтров:', error);

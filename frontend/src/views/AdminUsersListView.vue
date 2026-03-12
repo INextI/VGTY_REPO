@@ -1,12 +1,13 @@
 <template>
   <div class="app-container">
     <!-- Header -->
-    <header>
+   <header>
       <div class="header-container">
         <div class="header-left">
           <div class="logo">
-            <router-link to="/student/home">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+            <router-link to="/admin">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
                 alt="ВГТУ" width="24" height="34">
             </router-link>
           </div>
@@ -26,7 +27,7 @@
           </button>
           <div class="user-info">
             <span>{{ userName }}</span>
-            <router-link to="/student/profile" class="user-avatar">
+            <router-link to="/admin/profile" class="user-avatar">
               <i class="fas fa-user"></i>
             </router-link>
           </div>
@@ -43,24 +44,24 @@
             <p class="page-subtitle">Всего пользователей: {{ filteredUsers.length }}</p>
           </div>
           <div class="header-actions">
-            <button class="btn-primary" @click="openCreateModal">
+            <router-link class="btn-primary" to="/admin/createUser">
               <i class="fas fa-user-plus"></i>
               Добавить пользователя
-            </button>
+            </router-link>
             <button class="btn-secondary" @click="refreshUsers">
               <i class="fas fa-sync-alt"></i>
               Обновить
             </button>
           </div>
         </div>
-
+        
         <!-- Фильтры и поиск -->
         <div class="filters-section">
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input 
-              v-model="searchQuery" 
-              placeholder="Поиск по логину, имени, фамилии..." 
+            <input
+              v-model="searchQuery"
+              placeholder="Поиск по логину, имени, фамилии..."
               class="search-input"
             />
           </div>
@@ -69,9 +70,11 @@
               <label><i class="fas fa-filter"></i> Роль:</label>
               <select v-model="selectedRole" class="filter-select">
                 <option value="">Все роли</option>
-                <option value="student">Студент</option>
-                <option value="teacher">Преподаватель</option>
-                <option value="admin">Администратор</option>
+                <option v-for="role in roles" :key="role.id" :value="role.id">
+                  {{ role.code === 'student' ? 'Студент' :
+                    role.code === 'teacher' ? 'Преподаватель' :
+                    role.code === 'admin' ? 'Администратор' : role.name }}
+                </option>
               </select>
             </div>
             <div class="filter-group">
@@ -92,7 +95,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- Таблица пользователей -->
         <div class="users-table-container">
           <div v-if="loading" class="loading-state">
@@ -350,17 +353,17 @@ const stats = ref({
 const fetchRoles = async () => {
   rolesLoading.value = true;
   try {
-    const response = await $api.get('/roles'); // Эндпоинт для получения ролей
+    const response = await $api.get('/role'); // Эндпоинт для получения ролей
     roles.value = response.data;
     console.log('Роли загружены:', roles.value);
   } catch (error) {
     console.error('Ошибка загрузки ролей:', error);
     // Запасные данные на случай ошибки
-    roles.value = [
-      { id: 'uuid-студента', name: 'Студент', code: 'student' },
-      { id: 'uuid-преподавателя', name: 'Преподаватель', code: 'teacher' },
-      { id: 'uuid-администратора', name: 'Администратор', code: 'admin' }
-    ];
+   roles.value = [
+  { id: 'd16ae680-9579-47b5-be61-7cf1ef9d1749', name: 'student', code: 'student' },
+  { id: 'f77a7565-f9d8-4c15-859a-8248d5c395cc', name: 'teacher', code: 'teacher' },
+  { id: 'f91847c6-d78d-4fc4-8204-fdc493142ee8', name: 'admin', code: 'admin' }
+];
   } finally {
     rolesLoading.value = false;
   }
@@ -401,21 +404,22 @@ const roleCodeMap = computed(() => {
 
 // Расчет статистики с учетом UUID ролей
 const calculateStats = () => {
-  // Получаем UUID ролей "студент" и "преподаватель"
+  // Находим UUID ролей
   const studentRole = roles.value.find(r => r.code === 'student');
   const teacherRole = roles.value.find(r => r.code === 'teacher');
   
   stats.value = {
-    students: studentRole 
-      ? users.value.filter(u => u.role_id === studentRole.id).length 
-      : users.value.filter(u => u.role_id === 'student').length,
-    teachers: teacherRole 
-      ? users.value.filter(u => u.role_id === teacherRole.id).length 
-      : users.value.filter(u => u.role_id === 'teacher').length,
+    students: studentRole
+      ? users.value.filter(u => u.role_id === studentRole.id).length
+      : 0,
+    teachers: teacherRole
+      ? users.value.filter(u => u.role_id === teacherRole.id).length
+      : 0,
     active: users.value.filter(u => u.is_active).length,
     inactive: users.value.filter(u => !u.is_active).length
   };
 };
+
 
 // Опции для фильтра по ролям
 const roleOptions = computed(() => {
@@ -511,29 +515,23 @@ const getRoleName = (roleId) => {
   
   // 1. Пробуем найти в карте ролей из БД
   if (roleMap.value[roleId]) {
-    return roleMap.value[roleId];
+    // Возвращаем русское название в зависимости от кода
+    const role = roles.value.find(r => r.id === roleId);
+    if (role) {
+      const russianNames = {
+        'student': 'Студент',
+        'teacher': 'Преподаватель', 
+        'admin': 'Администратор'
+      };
+      return russianNames[role.code] || role.name;
+    }
   }
   
-  // 2. Если роль не найдена, пробуем определить по коду
-  // (для обратной совместимости со старыми данными)
-  const fallbackMap = {
-    'student': 'Студент',
-    'teacher': 'Преподаватель',
-    'admin': 'Администратор',
-    'moderator': 'Модератор'
-  };
-  
-  // 3. Проверяем, не является ли roleId кодом роли
-  if (fallbackMap[roleId]) {
-    return fallbackMap[roleId];
-  }
-  
-  // 4. Если это UUID, показываем сокращенную версию
+  // 2. Если роль не найдена, возвращаем сокращенный UUID
   if (roleId.includes('-')) {
     return `Роль: ${roleId.substring(0, 8)}...`;
   }
   
-  // 5. Возвращаем исходное значение
   return roleId;
 };
 
