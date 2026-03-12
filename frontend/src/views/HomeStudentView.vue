@@ -372,6 +372,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/authStore';
+import { getMyDisciplines } from '@/api/courseApi'
 
 // Router and Store
 const router = useRouter();
@@ -383,6 +384,7 @@ const viewMode = ref('grid');
 const showSuccessNotification = ref(false);
 const successMessage = ref('');
 const currentTime = ref('');
+const loadingCourses = ref(false)
 
 // Data
 const recentCourses = ref([
@@ -645,6 +647,53 @@ const currentSchedule = computed(() => {
 });
 
 // Methods
+
+const loadCourses = async () => {
+  try {
+
+    loadingCourses.value = true
+
+    const response = await getMyDisciplines({
+      page: 1,
+      limit: 50
+    })
+    console.log("API RESPONSE", response.data)
+    const disciplines = response.data.data
+
+    const mappedCourses = disciplines.map(d => ({
+      id: d.id,
+      title: d.name,
+      description: d.description,
+      teacher: d.teacher || 'Преподаватель',
+      subject: 'Дисциплина',
+      image: d.image_url
+      ? `${import.meta.env.VITE_API_URL}${d.image_url}`
+      : 'https://via.placeholder.com/300x120',
+      modules: 0,
+      assignments: 0,
+      progress: 0,
+      duration: 16,
+      students: 0,
+      rating: 4,
+      reviews: 0,
+      status: 'active'
+    }))
+
+    allCourses.value = mappedCourses
+
+    recentCourses.value = mappedCourses.slice(0, 3)
+
+  } catch (error) {
+
+    console.error('Ошибка загрузки курсов', error)
+
+  } finally {
+
+    loadingCourses.value = false
+
+  }
+}
+
 const toggleSearch = () => {
   console.log('Открыть поиск');
   // В реальном приложении здесь можно открыть модальное окно поиска
@@ -853,11 +902,16 @@ const closeSuccessNotification = () => {
 
 // Lifecycle hooks
 let timeInterval;
-onMounted(() => {
+onMounted(async () => {
+
   console.log('HomeStudentView загружен');
-  updateCurrentTime();
-  timeInterval = setInterval(updateCurrentTime, 60000); // Обновлять каждую минуту
-});
+
+  updateCurrentTime()
+  timeInterval = setInterval(updateCurrentTime, 60000)
+
+  await loadCourses()
+
+})
 
 onUnmounted(() => {
   if (timeInterval) {
