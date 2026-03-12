@@ -16,7 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/static", express.static("src/static"));
+app.use("/static", express.static(path.join(__dirname, "static")));
 
 app.use(cors({
     credentials: true,

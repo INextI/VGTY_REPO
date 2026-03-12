@@ -17,6 +17,15 @@ class DisciplineController {
         }
     }
 
+    async getById(req, res) {
+        try {
+            const disciplines = await disciplineService.getDisciplineById();
+            res.json(disciplines);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
+
     async getAllWithImage(req, res) {
         try {
             const disciplines = await disciplineService.getAllWithImage();

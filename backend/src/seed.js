@@ -12,7 +12,7 @@ const {
   EduProgramm,
   Role,
   AcademicYear,
-  Faculty
+  FacultyModel
 } = require("./models/index")
 
 async function seed() {

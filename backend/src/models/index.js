@@ -285,8 +285,9 @@ module.exports = {
     Discipline, 
     EducationForm, 
     EduProgramm,
-
-   DocumentType,
+    AcademicYear,
+    FacultyModel,
+    DocumentType,
     DocumentEditJob,
     DocumentEditJobLog,
     DocumentAttachment,
@@ -296,6 +297,5 @@ module.exports = {
     CompletedSession,
     ContactData,
     EmployeeGrades , 
-    Positions,
-    FacultyModel
+    Positions
 };

@@ -23,6 +23,7 @@
     "express-validator": "^7.3.1",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
+    "jszip": "^3.10.1",
     "multer": "^2.0.2",
     "pg": "^8.17.2",
     "pg-hstore": "^2.3.4",
