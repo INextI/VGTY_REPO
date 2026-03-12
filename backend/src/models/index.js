@@ -12,12 +12,24 @@ const EduProgramm = require('./eduProgrammModel')
 const Token = require('./tokenModel');
 const Role = require('./roleModel')
 const AcademicYear = require('./academicYearModel')
-const Faculty = require('./facultyModel')
-
-
+const Department = require('./departmentsModel')
+const FacultyModel = require('./facultyModel')
+const ContactDataTypes = require('./contactDataTypesModel')
+const DocumentType = require('./documentTypes')
+const DocumentEditJob = require('./documentEditJobs')
+const DocumentEditJobLog = require('./documentEditJobLogs')
+const DocumentAttachment = require('./documentAttachments')
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
 const DisciplineEmployee = require('./disciplineEmployeeModel')
+
+const Session = require('./sessionsModel')
+const CompletedSession = require('./completedSessionsModel')
+const ContactData = require('./contactDataModel')
+
+const EmployeeGrades = require('./employeeGradesModel')
+const Positions = require('./positionsModel')
+
 
 //связи
 
@@ -35,8 +47,8 @@ Role.hasMany(User, { foreignKey: 'role_id' });
 
 
 // Связь "Один-ко-Многим": Faculty -> Employees
-Faculty.hasMany(Employee, { foreignKey: 'faculty_id' })
-Employee.belongsTo(Faculty, { foreignKey: 'faculty_id' })
+FacultyModel.hasMany(Employee, { foreignKey: 'faculty_id' })
+Employee.belongsTo(FacultyModel, { foreignKey: 'faculty_id' })
 
 // Связь "Один-ко-Многим": Group -> Students
 Group.hasMany(Student, { foreignKey: 'group_id', as: 'students' })
@@ -59,8 +71,8 @@ Employee.hasMany(Group, { foreignKey: 'curator_id', as: 'curatedGroups' })
 Group.belongsTo(Employee, { foreignKey: 'curator_id', as: 'curator' })
 
 // Связь "Один-к-Одному": EduProgram ↔ Faculty
-Faculty.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
-EduProgramm.belongsTo(Faculty, { foreignKey: 'faculty_id' })
+FacultyModel.hasMany(EduProgramm, { foreignKey: 'faculty_id' })
+EduProgramm.belongsTo(FacultyModel, { foreignKey: 'faculty_id' })
 
 
 // Связь "Один-к-Многим": EduProgram ↔ EducationForm
@@ -109,16 +121,181 @@ Employee.belongsToMany(Discipline, {
    as: 'connected_disciplines'
 })
 
+// Связи для DocumentEditJob
+DocumentEditJob.belongsTo(Employee, {
+    foreignKey: 'created_by_employee_id',
+    as: 'createdBy'
+})
+
+Employee.hasMany(DocumentEditJob, {
+    foreignKey: 'created_by_employee_id',
+    as: 'documentEditJobs'
+})
+
+// Связи для DocumentEditJobLog
+DocumentEditJobLog.belongsTo(DocumentEditJob, {
+    foreignKey: 'job_id',
+    as: 'job'
+})
+
+DocumentEditJob.hasMany(DocumentEditJobLog, {
+    foreignKey: 'job_id',
+    as: 'logs'
+})
+
+DocumentEditJobLog.belongsTo(DocumentAttachment, {
+    foreignKey: 'document_attachment_id',
+    as: 'document'
+})
+
+DocumentAttachment.hasMany(DocumentEditJobLog, {
+    foreignKey: 'document_attachment_id',
+    as: 'editLogs'
+})
+
+// Связи для DocumentAttachment
+DocumentAttachment.belongsTo(DocumentType, {
+    foreignKey: 'type_id',
+    as: 'documentType'
+})
+
+DocumentType.hasMany(DocumentAttachment, {
+    foreignKey: 'type_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(Department, {
+    foreignKey: 'department_id',
+    as: 'department'
+})
+
+Department.hasMany(DocumentAttachment, {
+    foreignKey: 'department_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(Discipline, {
+    foreignKey: 'discipline_id',
+    as: 'discipline'
+})
+
+Discipline.hasMany(DocumentAttachment, {
+    foreignKey: 'discipline_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(EduProgramm, {
+    foreignKey: 'edu_program_id',
+    as: 'eduProgram'
+})
+
+EduProgramm.hasMany(DocumentAttachment, {
+    foreignKey: 'edu_program_id',
+    as: 'attachments'
+})
+
+DocumentAttachment.belongsTo(Session, {
+    foreignKey: 'session_id',
+    as: 'session'
+})
+
+Session.hasMany(DocumentAttachment, {
+    foreignKey: 'session_id',
+    as: 'attachments'
+})
+
+
+/**
+ * Определение связей для модели Session
+ */
+Session.associate = (models) => {
+    Session.belongsTo(models.Discipline, {
+        foreignKey: 'discipline_id',
+        as: 'discipline'
+    });
+    
+    Session.belongsTo(models.Employee, {
+        foreignKey: 'teacher_id',
+        as: 'teacher'
+    });
+    
+    Session.hasMany(models.CompletedSession, {
+        foreignKey: 'session_id',
+        as: 'completedSessions'
+    });
+    
+    Session.belongsToMany(models.Student, {
+        through: models.CompletedSession,
+        foreignKey: 'session_id',
+        otherKey: 'student_id',
+        as: 'students'
+    });
+};
+
+/**
+ * Определение связей для модели CompletedSession
+ */
+CompletedSession.associate = (models) => {
+    CompletedSession.belongsTo(models.Student, {
+        foreignKey: 'student_id',
+        as: 'student'
+    });
+    
+    CompletedSession.belongsTo(models.Session, {
+        foreignKey: 'session_id',
+        as: 'session'
+    });
+};
+
+/**
+ * Определение связей для модели ContactData
+ */
+ContactData.associate = (models) => {
+    ContactData.belongsTo(models.ContactDataTypes, {
+        foreignKey: 'type_id',
+        as: 'contactType'
+    });
+    
+    // Полиморфные связи
+    ContactData.belongsTo(models.Student, {
+        foreignKey: 'person_id',
+        constraints: false,
+        scope: {
+            person_type: 'student'
+        },
+        as: 'studentContact'
+    });
+    
+    ContactData.belongsTo(models.Employee, {
+        foreignKey: 'person_id',
+        constraints: false,
+        scope: {
+            person_type: 'employee'
+        },
+        as: 'employeeContact'
+    });
+};
+
 module.exports = {
     User,
     Student,
     Employee,
+    Role,
     Group,
     Discipline, 
     EducationForm, 
     EduProgramm,
-    Token,
-    Role,
-    AcademicYear,
-    Faculty
+
+   DocumentType,
+    DocumentEditJob,
+    DocumentEditJobLog,
+    DocumentAttachment,
+    Department,
+    ContactDataTypes,
+    Session,
+    CompletedSession,
+    ContactData,
+    EmployeeGrades , 
+    Positions,
+    FacultyModel
 };

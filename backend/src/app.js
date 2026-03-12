@@ -4,6 +4,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser')
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
+const multer = require('multer');
+
 require('./models') 
 
 // Импорт роутов

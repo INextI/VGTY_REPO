@@ -27,6 +27,17 @@ const routes = [
     meta: { requiresAuth: true, role: 'admin' } 
   },
   { 
+    path: '/admin/documentUpdate', 
+    component: () => import('@/views/DocumentBatchEditorView.vue'),
+    meta: { requiresAuth: true, role: 'admin' } 
+  },
+{ 
+    path: '/admin/uploadDocument', 
+    component: () => import('@/views/DocumentUploadView.vue'),
+    meta: { requiresAuth: true, role: 'admin' } 
+  },
+
+  { 
     path: '/student/home', 
     component: () => import('@/views/HomeStudentView.vue'),
     meta: { requiresAuth: true, role: 'student' } 
@@ -74,28 +85,28 @@ const router = createRouter({
 import { useAuthStore } from '@/stores/authStore';
 
 
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
-  const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user')); // Берем напрямую для надежности
+// router.beforeEach((to, from, next) => {
+//   const authStore = useAuthStore();
+//   const token = localStorage.getItem('token');
+//   const user = JSON.parse(localStorage.getItem('user')); // Берем напрямую для надежности
 
-  // Если страница требует авторизации, а токена нет
-  if (to.meta.requiresAuth && !token) {
-    return next('/api/auth/login');
-  }
+//   // Если страница требует авторизации, а токена нет
+//   if (to.meta.requiresAuth && !token) {
+//     return next('/api/auth/login');
+//   }
 
-  // Если у страницы есть ограничение по роли
-  if (to.meta.role) {
-    const userRole = authStore.user?.role || user?.role;
+//   // Если у страницы есть ограничение по роли
+//   if (to.meta.role) {
+//     const userRole = authStore.user?.role || user?.role;
     
-    if (userRole !== to.meta.role) {
-      console.warn('Доступ запрещен: недостаточно прав');
-      return next('/api/auth/login'); 
-    }
-  }
+//     if (userRole !== to.meta.role) {
+//       console.warn('Доступ запрещен: недостаточно прав');
+//       return next('/api/auth/login'); 
+//     }
+//   }
 
-  next();
-});
+//   next();
+// });
 
 
 export default router;
