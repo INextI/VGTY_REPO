@@ -1,8 +1,8 @@
-// backend/src/services/documentService.js 
 const { Worker } = require('bullmq');
 const JSZip = require('jszip');
 const db = require('../config/db');
 const { QueryTypes } = require('sequelize');
+const { v4: uuidv4 } = require('uuid');
 
 async function findDocumentsByCriteria(criteria) {
     let query = `
@@ -10,10 +10,9 @@ async function findDocumentsByCriteria(criteria) {
         FROM document_attachments da
         JOIN document_types dt ON da.type_id = dt.id
     `;
-
     const wheres = [];
     const replacements = {};
-
+    
     if (criteria.departmentIds?.length) {
         wheres.push(`da.department_id IN (:departmentIds)`);
         replacements.departmentIds = criteria.departmentIds;
@@ -30,28 +29,26 @@ async function findDocumentsByCriteria(criteria) {
         wheres.push(`da.type_id IN (:documentTypeIds)`);
         replacements.documentTypeIds = criteria.documentTypeIds;
     }
-
+    
     // Если есть фильтры, объединяем их через OR (как в вашей логике) или AND
     if (wheres.length > 0) {
         query += ' WHERE ' + wheres.join(' OR ');
     }
     
     query += ' ORDER BY da.name';
-    
 
-
-  try {
+    try {
         const results = await db.query(query, {
-            replacements: replacements, 
+            replacements: replacements,
             type: db.QueryTypes.SELECT
         });
-        return results; // Sequelize возвращает массив объектов напрямую
+        return results;
     } catch (error) {
         console.error('Ошибка при поиске документов:', error);
         throw error;
     }
-
 }
+
 /**
  * Безопасная замена текста в DOCX файле с учетом XML структуры
  */
@@ -110,7 +107,6 @@ async function replaceTextInFile(buffer, fileName, searchText, replaceText) {
     switch (extension) {
         case 'docx':
             return await replaceTextInDocx(buffer, searchText, replaceText);
-            
         case 'txt':
         case 'md':
         case 'html':
@@ -118,11 +114,8 @@ async function replaceTextInFile(buffer, fileName, searchText, replaceText) {
             const textContent = buffer.toString('utf-8');
             const newText = textContent.replace(new RegExp(escapeRegExp(searchText), 'gi'), replaceText);
             return Buffer.from(newText, 'utf-8');
-            
         case 'pdf':
-            // Для PDF потребуется специальная библиотека
             throw new Error("Редактирование PDF файлов требует дополнительных библиотек");
-            
         default:
             throw new Error(`Неподдерживаемый формат файла: ${extension}`);
     }
@@ -133,31 +126,145 @@ async function replaceTextInFile(buffer, fileName, searchText, replaceText) {
  */
 async function logResult(jobId, documentId, status, message = null) {
     await db.query(
-        `INSERT INTO document_edit_job_logs 
+        `INSERT INTO document_edit_job_logs
          (job_id, document_attachment_id, status, message, created_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [jobId, documentId, status, message]
+         VALUES (:jobId, :documentId, :status, :message, NOW())`,
+        {
+            replacements: { jobId, documentId, status, message },
+            type: QueryTypes.INSERT
+        }
     );
 }
 
 /**
  * Создание резервной копии документа
+ * ИСПРАВЛЕНО: Генерируем новый UUID для резервной копии
  */
 async function createBackup(documentId) {
-    const result = await db.query(
-        `INSERT INTO document_attachments 
-         (name, type_id, doc, upload_date, department_id, discipline_id, edu_program_id, session_id)
-         SELECT name, type_id, doc, upload_date, department_id, discipline_id, edu_program_id, session_id
-         FROM document_attachments WHERE id = $1
-         RETURNING id`,
-        [documentId]
-    );
+    const newId = uuidv4(); // Генерируем новый UUID для резервной копии
     
-    return result.rows[0].id;
+    const result = await db.query(
+        `INSERT INTO document_attachments
+         (id, name, type_id, doc, upload_date, department_id, discipline_id, edu_program_id, session_id)
+         SELECT :newId, name, type_id, doc, upload_date, department_id, discipline_id, edu_program_id, session_id
+         FROM document_attachments WHERE id = :documentId
+         RETURNING id`,
+        {
+            replacements: { newId, documentId },
+            type: QueryTypes.INSERT
+        }
+    );
+    return result[0].id;
 }
 
 /**
- * Основной обработчик задачи массового редактирования
+ * НОВАЯ ФУНКЦИЯ: Обработка замены текста в одном документе
+ * Эта функция вызывается из documentJobProcessor.js
+ */
+async function processDocumentReplacement(documentId, searchText, replaceText) {
+    let backupId = null;
+    
+    try {
+        console.log(`🔍 Обработка замены в документе ${documentId}`);
+        console.log(`📝 Поиск: "${searchText}", Замена: "${replaceText}"`);
+
+        // Получаем данные документа с использованием правильного синтаксиса Sequelize
+        const docData = await db.query(
+            'SELECT doc, name FROM document_attachments WHERE id = :documentId',
+            {
+                replacements: { documentId },
+                type: QueryTypes.SELECT
+            }
+        );
+
+        if (docData.length === 0) {
+            throw new Error(`Документ с ID ${documentId} не найден`);
+        }
+
+        const { doc: buffer, name: fileName } = docData[0];
+        
+        // Создаем резервную копию
+        backupId = await createBackup(documentId);
+        
+        // Обрабатываем файл
+        const newBuffer = await replaceTextInFile(buffer, fileName, searchText, replaceText);
+        
+        // Обновляем документ в БД
+        await db.query(
+            'UPDATE document_attachments SET doc = :newBuffer WHERE id = :documentId',
+            {
+                replacements: { newBuffer, documentId },
+                type: QueryTypes.UPDATE
+            }
+        );
+
+        // Подсчитываем количество замен
+        const extension = fileName.split('.').pop().toLowerCase();
+        let replacements = 0;
+        
+        if (extension === 'docx') {
+            const zip = await JSZip.loadAsync(buffer);
+            const contentXml = zip.file("word/document.xml");
+            if (contentXml) {
+                const xmlContent = await contentXml.async("string");
+                const regex = new RegExp(escapeRegExp(searchText), 'gi');
+                const matches = xmlContent.match(regex) || [];
+                replacements = matches.length;
+            }
+        } else if (['txt', 'md', 'html', 'htm'].includes(extension)) {
+            const textContent = buffer.toString('utf-8');
+            const regex = new RegExp(escapeRegExp(searchText), 'gi');
+            const matches = textContent.match(regex) || [];
+            replacements = matches.length;
+        }
+
+        console.log(`✅ Успешно заменено ${replacements} вхождений в документе ${fileName}`);
+
+        return {
+            success: true,
+            replacements: replacements,
+            backupId: backupId
+        };
+
+    } catch (error) {
+        console.error(`❌ Ошибка при обработке документа ${documentId}:`, error);
+        
+        // Восстанавливаем из резервной копии, если она была создана
+        if (backupId) {
+            try {
+                // Проверяем, существует ли оригинальный документ
+                const originalExists = await db.query(
+                    'SELECT id FROM document_attachments WHERE id = :documentId',
+                    {
+                        replacements: { documentId },
+                        type: QueryTypes.SELECT
+                    }
+                );
+                
+                if (originalExists.length === 0) {
+                    // Документ был удален, восстанавливаем из резервной копии
+                    await db.query(
+                        'UPDATE document_attachments SET id = :documentId WHERE id = :backupId',
+                        {
+                            replacements: { documentId, backupId },
+                            type: QueryTypes.UPDATE
+                        }
+                    );
+                }
+            } catch (restoreError) {
+                console.error('❌ Ошибка при восстановлении документа:', restoreError);
+            }
+        }
+
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/**
+ * Основной обработчик задачи массового редактирования (для BullMQ)
  */
 const processJob = async (job) => {
     const { jobId } = job.data;
@@ -165,65 +272,76 @@ const processJob = async (job) => {
     try {
         // 1. Получаем детали задания из БД
         const jobDetails = await db.query(
-            'SELECT * FROM document_edit_jobs WHERE id = $1',
-            [jobId]
+            'SELECT * FROM document_edit_jobs WHERE id = :jobId',
+            {
+                replacements: { jobId },
+                type: QueryTypes.SELECT
+            }
         );
         
-        if (jobDetails.rows.length === 0) {
+        if (jobDetails.length === 0) {
             throw new Error(`Задание с ID ${jobId} не найдено`);
         }
         
-        const { 
-            search_text, 
-            replace_text, 
+        const {
+            search_text,
+            replace_text,
             filter_criteria,
-            created_by_employee_id 
-        } = jobDetails.rows[0];
-        
+            created_by_employee_id
+        } = jobDetails[0];
+
         // 2. Обновляем статус задания на 'in_progress'
         await db.query(
-            `UPDATE document_edit_jobs 
-             SET status = 'in_progress', started_at = NOW() 
-             WHERE id = $1`,
-            [jobId]
+            `UPDATE document_edit_jobs
+             SET status = 'in_progress', started_at = NOW()
+             WHERE id = :jobId`,
+            {
+                replacements: { jobId },
+                type: QueryTypes.UPDATE
+            }
         );
-        
+
         // 3. Находим все документы, подходящие под фильтры
         const documents = await findDocumentsByCriteria(filter_criteria);
-        
         console.log(`Найдено ${documents.length} документов для обработки`);
-        
+
         // 4. Обрабатываем каждый документ
         let processedCount = 0;
         let successCount = 0;
         let failedCount = 0;
         let skippedCount = 0;
-        
+
         for (const doc of documents) {
             processedCount++;
             
             try {
                 // Обновляем прогресс в БД
                 await db.query(
-                    `UPDATE document_edit_jobs 
-                     SET processed_count = $1, total_count = $2 
-                     WHERE id = $3`,
-                    [processedCount, documents.length, jobId]
+                    `UPDATE document_edit_jobs
+                     SET processed_count = :processedCount, total_count = :totalCount
+                     WHERE id = :jobId`,
+                    {
+                        replacements: { processedCount, totalCount: documents.length, jobId },
+                        type: QueryTypes.UPDATE
+                    }
                 );
-                
+
                 // Получаем бинарные данные документа
                 const docData = await db.query(
-                    'SELECT doc, name FROM document_attachments WHERE id = $1',
-                    [doc.id]
+                    'SELECT doc, name FROM document_attachments WHERE id = :documentId',
+                    {
+                        replacements: { documentId: doc.id },
+                        type: QueryTypes.SELECT
+                    }
                 );
                 
-                if (docData.rows.length === 0) {
+                if (docData.length === 0) {
                     await logResult(jobId, doc.id, 'failed', 'Документ не найден в БД');
                     failedCount++;
                     continue;
                 }
-                
-                const { doc: buffer, name: fileName } = docData.rows[0];
+
+                const { doc: buffer, name: fileName } = docData[0];
                 
                 // Создаем резервную копию
                 const backupId = await createBackup(doc.id);
@@ -231,23 +349,26 @@ const processJob = async (job) => {
                 try {
                     // Обрабатываем файл в зависимости от типа
                     const newBuffer = await replaceTextInFile(
-                        buffer, 
-                        fileName, 
-                        search_text, 
+                        buffer,
+                        fileName,
+                        search_text,
                         replace_text
                     );
                     
                     // Обновляем документ в БД
                     await db.query(
-                        'UPDATE document_attachments SET doc = $1 WHERE id = $2',
-                        [newBuffer, doc.id]
+                        'UPDATE document_attachments SET doc = :newBuffer WHERE id = :documentId',
+                        {
+                            replacements: { newBuffer, documentId: doc.id },
+                            type: QueryTypes.UPDATE
+                        }
                     );
                     
                     // Сохраняем ссылку на резервную копию в логе
                     await logResult(
-                        jobId, 
-                        doc.id, 
-                        'success', 
+                        jobId,
+                        doc.id,
+                        'success',
                         `Успешно обработан. Резервная копия: ${backupId}`
                     );
                     
@@ -256,19 +377,24 @@ const processJob = async (job) => {
                 } catch (processError) {
                     // В случае ошибки восстанавливаем из резервной копии
                     await db.query(
-                        'DELETE FROM document_attachments WHERE id = $1',
-                        [doc.id]
+                        'DELETE FROM document_attachments WHERE id = :documentId',
+                        {
+                            replacements: { documentId: doc.id },
+                            type: QueryTypes.DELETE
+                        }
                     );
-                    
                     await db.query(
-                        'UPDATE document_attachments SET id = $1 WHERE id = $2',
-                        [doc.id, backupId]
+                        'UPDATE document_attachments SET id = :documentId WHERE id = :backupId',
+                        {
+                            replacements: { documentId: doc.id, backupId },
+                            type: QueryTypes.UPDATE
+                        }
                     );
                     
                     await logResult(
-                        jobId, 
-                        doc.id, 
-                        'failed', 
+                        jobId,
+                        doc.id,
+                        'failed',
                         `Ошибка обработки: ${processError.message}. Документ восстановлен из резервной копии.`
                     );
                     
@@ -280,17 +406,20 @@ const processJob = async (job) => {
                 failedCount++;
             }
         }
-        
+
         // 5. Обновляем финальный статус задания
         await db.query(
-            `UPDATE document_edit_jobs 
-             SET status = 'completed', 
+            `UPDATE document_edit_jobs
+             SET status = 'completed',
                  completed_at = NOW(),
-                 success_count = $1,
-                 failed_count = $2,
-                 skipped_count = $3
-             WHERE id = $4`,
-            [successCount, failedCount, skippedCount, jobId]
+                 success_count = :successCount,
+                 failed_count = :failedCount,
+                 skipped_count = :skippedCount
+             WHERE id = :jobId`,
+            {
+                replacements: { successCount, failedCount, skippedCount, jobId },
+                type: QueryTypes.UPDATE
+            }
         );
         
         console.log(`Задание ${jobId} завершено. Успешно: ${successCount}, Ошибок: ${failedCount}`);
@@ -299,12 +428,15 @@ const processJob = async (job) => {
         console.error(`Ошибка при выполнении задания ${jobId}:`, error);
         
         await db.query(
-            `UPDATE document_edit_jobs 
-             SET status = 'failed', 
-                 error_message = $1,
+            `UPDATE document_edit_jobs
+             SET status = 'failed',
+                 error_message = :errorMessage,
                  completed_at = NOW()
-             WHERE id = $2`,
-            [error.message, jobId]
+             WHERE id = :jobId`,
+            {
+                replacements: { errorMessage: error.message, jobId },
+                type: QueryTypes.UPDATE
+            }
         );
     }
 };
@@ -325,7 +457,6 @@ async function previewChanges(searchText, filterCriteria) {
     
     for (const doc of documents) {
         try {
-            // Исправляем получение данных (Sequelize возвращает массив)
             const docData = await db.query(
                 'SELECT doc, name FROM document_attachments WHERE id = :id',
                 { replacements: { id: doc.id }, type: QueryTypes.SELECT }
@@ -365,9 +496,9 @@ async function previewChanges(searchText, filterCriteria) {
             console.error(`Ошибка при предпросмотре документа ${doc.id}:`, error);
         }
     }
+    
     return previewResults;
 }
-
 
 module.exports = {
     findDocumentsByCriteria,
@@ -376,88 +507,6 @@ module.exports = {
     processJob,
     previewChanges,
     logResult,
-    createBackup
+    createBackup,
+    processDocumentReplacement
 };
-
-// // Запускаем воркер для обработки очереди
-// new Worker('document-edit-queue', processJob, { 
-//     connection: { 
-//         host: process.env.REDIS_HOST || "localhost", 
-//         port: process.env.REDIS_PORT || 6379 
-//     },
-//     concurrency: 3 // Обрабатываем 3 документа одновременно
-// });
-
-
-
-/* 
-
-const { Worker } = require('bullmq');
-const JSZip = require('jszip');
-const db = require('../config/db'); 
-
-// Обработчик задачи
-const processJob = async (job) => {
-    const { jobId } = job.data;
-
-    // 1. Получаем детали задания из БД
-    const jobDetails = await db.query('SELECT * FROM document_edit_jobs WHERE id = $1', [jobId]);
-    const { search_text, replace_text, filter_criteria } = jobDetails.rows[0];
-
-    // 2. Находим все документы, подходящие под фильтры
-    // (Этот SQL-запрос будет сложным, с JOIN'ами на departments, disciplines и т.д.)
-    const documents = await findDocumentsByCriteria(filter_criteria);
-
-    // 3. Обновляем статус задания на 'in_progress'
-    await db.query(`UPDATE document_edit_jobs SET status = 'in_progress' WHERE id = $1`, [jobId]);
-
-    // 4. Обрабатываем каждый документ
-    for (const doc of documents) {
-        try {
-            // Получаем бинарные данные документа из БД
-            const docData = await db.query('SELECT doc FROM document_attachments WHERE id = $1', [doc.id]);
-            const buffer = docData.rows[0].doc;
-
-            // РАБОТА С DOCX
-            const zip = await JSZip.loadAsync(buffer);
-            const contentXml = zip.file("word/document.xml");
-
-            if (!contentXml) {
-                throw new Error("Неверный формат docx: отсутствует word/document.xml");
-            }
-
-            let content = await contentXml.async("string");
-            
-            // Проверяем, есть ли что заменять
-            if (content.includes(search_text)) {
-                // ВАЖНО: Простая замена может сломать XML-теги.
-                // Безопаснее заменять текст только внутри <w:t> тегов.
-                const newContent = content.replace(new RegExp(search_text, 'g'), replace_text);
-
-                zip.file("word/document.xml", newContent);
-
-                const newBuffer = await zip.generateAsync({ type: "nodebuffer" });
-
-                // Обновляем документ в БД
-                await db.query('UPDATE document_attachments SET doc = $1 WHERE id = $2', [newBuffer, doc.id]);
-
-                // Логируем успех
-                await logResult(jobId, doc.id, 'success');
-            } else {
-                 // Логируем, что текст не найден и замена не требовалась
-                await logResult(jobId, doc.id, 'skipped', 'Текст для замены не найден');
-            }
-
-        } catch (error) {
-            // Логируем ошибку для конкретного файла
-            await logResult(jobId, doc.id, 'failed', error.message);
-        }
-    }
-
-    // 5. Обновляем статус задания на 'completed'
-    await db.query(`UPDATE document_edit_jobs SET status = 'completed', completed_at = NOW() WHERE id = $1`, [jobId]);
-};
-
-// Запускаем воркер
-new Worker('document-edit-queue', processJob, { connection: { host: "localhost", port: 6379 } });
- */

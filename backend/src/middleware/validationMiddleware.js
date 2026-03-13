@@ -2,41 +2,68 @@ const Joi = require('joi');
 
 class ValidationMiddleware {
   /**
-   * Валидация запроса на предпросмотр
-   */
-  validateDocumentJobPreview(req, res, next) {
-  console.log('>>> [BACKEND] Валидация предпросмотра. Body:', JSON.stringify(req.body, null, 2));
-    
-    const schema = Joi.object({
-        searchText: Joi.string().min(1).max(1000).required(),
-        filters: Joi.object({
-             departmentIds: Joi.array().items(Joi.string().guid()).default([]),
-                disciplineIds: Joi.array().items(Joi.string().guid()).default([]),
-                eduProgramIds: Joi.array().items(Joi.string().guid()).default([]),
-                sessionIds: Joi.array().items(Joi.string().guid()).default([]),
-                documentTypeIds: Joi.array().items(Joi.string().guid()).default([]),
-                eduProgramByDepartmentIds: Joi.array().items(Joi.string().guid()).default([]),
-                disciplineByEduProgramIds: Joi.array().items(Joi.string().guid()).default([])
-        }).min(1).required()
-    });
+ * Валидация запроса на предпросмотр
+ */
 
-    const { error } = schema.validate(req.body, { abortEarly: false });
-    
-    if (error) {
-        console.error('!!! [BACKEND] Ошибка валидации Joi:', error.details.map(d => d.message));
-        const errors = error.details.map(detail => ({
-            field: detail.path.join('.'),
-            message: detail.message
-        }));
-        
-        return res.status(400).json({
-            error: 'Ошибка валидации',
-            details: errors
+validateDocumentJobPreview(req, res, next) {
+  console.log('>>> [BACKEND] Валидация предпросмотра. Body:', JSON.stringify(req.body, null, 2));
+  const schema = Joi.object({
+    searchText: Joi.string().min(1).max(1000).required(),
+    replaceText: Joi.string()
+      .max(1000)
+      .allow('')
+      .required()
+      .messages({
+        'string.max': 'Текст для замены не может превышать 1000 символов',
+        'any.required': 'Текст для замены обязателен'
+      }),
+    filters: Joi.object({
+      departmentIds: Joi.array().items(Joi.string().guid()).default([]),
+      disciplineIds: Joi.array().items(Joi.string().guid()).default([]),
+      eduProgramIds: Joi.array().items(Joi.string().guid()).default([]),
+      sessionIds: Joi.array().items(Joi.string().guid()).default([]),
+      documentTypeIds: Joi.array().items(Joi.string().guid()).default([]),
+      eduProgramByDepartmentIds: Joi.array().items(Joi.string().guid()).default([]),
+      disciplineByEduProgramIds: Joi.array().items(Joi.string().guid()).default([])
+    })
+    .default({}) // Добавлено: значение по умолчанию
+    .custom((value, helpers) => {
+      // Проверяем, что хотя бы один массив не пустой
+      const hasFilters = 
+        value.departmentIds?.length > 0 ||
+        value.disciplineIds?.length > 0 ||
+        value.eduProgramIds?.length > 0 ||
+        value.sessionIds?.length > 0 ||
+        value.documentTypeIds?.length > 0 ||
+        value.eduProgramByDepartmentIds?.length > 0 ||
+        value.disciplineByEduProgramIds?.length > 0;
+      
+      if (!hasFilters) {
+        return helpers.error('any.custom', {
+          message: 'Необходимо указать хотя бы один фильтр'
         });
-    }
-    console.log('<<< [BACKEND] Валидация успешно пройдена');
-    next();
+      }
+      return value;
+    })
+    .required()
+  });
+  
+  const { error } = schema.validate(req.body, { abortEarly: false });
+  if (error) {
+    console.error('!!! [BACKEND] Ошибка валидации Joi:', error.details.map(d => d.message));
+    const errors = error.details.map(detail => ({
+      field: detail.path.join('.'),
+      message: detail.message
+    }));
+    return res.status(400).json({
+      error: 'Ошибка валидации',
+      details: errors
+    });
   }
+  console.log('<<< [BACKEND] Валидация успешно пройдена');
+  next();
+}
+
 
   /**
    * Валидация запроса на создание задания

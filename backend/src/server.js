@@ -1,5 +1,5 @@
 require('dotenv').config()
-
+const documentJobProcessor = require('./services/documentJobProcessor');
 const sequelize = require('./config/db')
 
 const swaggerAutogen = require('swagger-autogen')();
@@ -27,5 +27,14 @@ const start = async () => {
     console.log(e)
   }
 }
+
+// После инициализации базы данных
+documentJobProcessor.start();
+
+// Для корректного завершения
+process.on('SIGINT', () => {
+  documentJobProcessor.stop();
+  process.exit(0);
+});
 
 start()

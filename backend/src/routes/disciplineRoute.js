@@ -14,6 +14,7 @@ const {idParamSchema} = require('../validators/common/idParamSchema')
 const paginationSchema = require('../validators/common/pagination')
 
 router.post("/", upload.single("image"), validate(createDisciplineSchema), disciplineController.create);
+router.get("/", disciplineController.getAll);
 router.get('/my', authMiddleware, validate(paginationSchema, "query"), disciplineController.getMyDisciplines)
 router.get("/", disciplineController.getAllWithImage);
 //router.get("/light", disciplineController.getAllWithoutImage);

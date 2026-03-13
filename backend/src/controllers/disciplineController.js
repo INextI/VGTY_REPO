@@ -61,6 +61,16 @@ class DisciplineController {
         }
     }
 
+     async getAll(req, res, next) {
+            try {
+                const relations = await disciplineService.getAllDisciplines();
+                return res.status(200).json(relations);
+            } catch (e) {
+                next(e);
+            }
+        }
+
+
     async getByIdWithoutImage(req, res) {
         try {
             const discipline = await disciplineService.getByIdWithoutImage(req.params.id);
