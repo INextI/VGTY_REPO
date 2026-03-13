@@ -21,6 +21,10 @@ const educationFormRouter = require('./educationFormRoute')
 const eduProgrammRouter = require('./eduProgrammRoute')
 const facultyRouter = require('./facultyRoute')
 const groupRouter = require('./groupRoute')
+const assignmentRouter = require('./assignmentRoute')
+const assignmentMaterialsRoute = require('./assignmentMaterialsRoute')
+const assignmentFilesRoute = require('./assignmentFilesRoute')
+
 
 const sessionRoutes = require('./sessionRoutes');
 const positionsRoutes = require('./positionsRoutes');
@@ -47,6 +51,9 @@ router.use('/educationForm', educationFormRouter)
 router.use('/eduProgramm', eduProgrammRouter)
 router.use('/faculty', facultyRouter)
 router.use('/group', groupRouter)
+router.use('/assignment', assignmentRouter)
+router.use('/assignmentMaterials', assignmentMaterialsRoute)
+router.use('/assignmentFiles', assignmentFilesRoute)
 
 router.use('/session', sessionRoutes)
 router.use('/positions', positionsRoutes)
