@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const roleController = require('../controllers/roleController');
-const validate = require('../middleware/validationMiddleware')
+const validate = require('../middleware/validationMiddlewaree')
 const {
     createRoleSchema,
     updateRoleSchema

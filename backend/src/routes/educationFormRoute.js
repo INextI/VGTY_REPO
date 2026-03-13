@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const educationFormController = require('../controllers/educationFormController');
 
-const validate = require('../middleware/validationMiddleware')
+const validate = require('../middleware/validationMiddlewaree')
 
 const { 
     createEducationFormSchema,

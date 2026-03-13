@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const groupController = require('../controllers/groupController');
 
-const validate = require('../middleware/validationMiddleware')
+const validate = require('../middleware/validationMiddlewaree')
 
 const { 
     createGroupSchema,

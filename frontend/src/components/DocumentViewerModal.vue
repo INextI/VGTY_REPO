@@ -1,11 +1,10 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click.self="close">
+  <div v-show="isOpen" class="modal-overlay" @click.self="close">
     <div class="modal-container">
       <div class="modal-header">
         <h3>{{ document?.name }}</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
-      
       <div class="modal-content">
         <!-- Информация о документе -->
         <div class="document-info">
@@ -18,20 +17,17 @@
             <span class="value">{{ document?.matches || 0 }}</span>
           </div>
         </div>
-        
         <!-- Предпросмотр с подсветкой -->
         <div class="document-preview">
           <h4>Предпросмотр с изменениями:</h4>
           <div class="preview-content" v-html="highlightedContent"></div>
         </div>
-        
         <!-- Оригинальный текст -->
         <div class="original-text" v-if="originalContent">
           <h4>Оригинальный текст:</h4>
           <pre class="original-content">{{ originalContent }}</pre>
         </div>
       </div>
-      
       <div class="modal-footer">
         <button class="btn-secondary" @click="close">Закрыть</button>
       </div>
@@ -40,7 +36,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 const props = defineProps({
   document: {
@@ -55,8 +51,18 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const isOpen = ref(true);
+const isOpen = ref(false);
 const originalContent = ref('');
+
+// Открываем модальное окно при получении документа
+watch(() => props.document, (newDoc) => {
+  if (newDoc) {
+    isOpen.value = true;
+    loadOriginalContent();
+  } else {
+    isOpen.value = false;
+  }
+}, { immediate: true });
 
 const highlightedContent = computed(() => {
   if (!props.document?.preview || !props.searchText) {
@@ -65,13 +71,13 @@ const highlightedContent = computed(() => {
   
   const searchRegex = new RegExp(`(${escapeRegExp(props.searchText)})`, 'gi');
   return props.document.preview.replace(
-    searchRegex, 
+    searchRegex,
     '<mark class="highlight">$1</mark>'
   );
 });
 
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function close() {
@@ -88,15 +94,15 @@ async function loadOriginalContent() {
   try {
     // Здесь должен быть API запрос для получения оригинального контента
     // originalContent.value = await api.get(`/documents/${props.document.id}/content`);
+    
+    // Временно используем preview как оригинальный контент
+    originalContent.value = props.document.preview || '';
   } catch (error) {
     console.error('Ошибка при загрузке оригинального контента:', error);
   }
 }
-
-onMounted(() => {
-  loadOriginalContent();
-});
 </script>
+
 
 <style scoped>
 .modal-overlay {

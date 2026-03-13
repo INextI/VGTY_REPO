@@ -1,43 +1,43 @@
-// frontend/src/views/DocumentBatchEditorView.vue 
-
+// frontend/src/views/DocumentBatchEditorView.vue
 <template>
-<!-- Header -->
-    <header>
-      <div class="header-container">
-        <div class="header-left">
-          <div class="logo">
-            <router-link to="/admin">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
-                alt="ВГТУ" width="24" height="34">
-            </router-link>
-          </div>
-        </div>
-        <div class="header-right">
-          <button class="icon" title="Поиск" @click="toggleSearch">
-            <i class="fas fa-search"></i>
-          </button>
-          <button class="icon" title="Уведомления" @click="toggleNotifications">
-            <i class="fas fa-bell"></i>
-            <span v-if="unreadNotifications > 0" class="notification-badge">
-              {{ unreadNotifications }}
-            </span>
-          </button>
-          <button class="icon" title="Чат" @click="openChat">
-            <i class="fas fa-comments"></i>
-          </button>
-          <div class="user-info">
-            <span>{{ userName }}</span>
-            <router-link to="/student/profile" class="user-avatar">
-              <i class="fas fa-user"></i>
-            </router-link>
-          </div>
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-left">
+        <div class="logo">
+          <router-link to="/admin">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Vstu_logo.svg/640px-Vstu_logo.svg.png"
+              alt="ВГТУ" width="24" height="34">
+          </router-link>
         </div>
       </div>
-    </header>
+      <div class="header-right">
+        <button class="icon" title="Поиск" @click="toggleSearch">
+          <i class="fas fa-search"></i>
+        </button>
+        <button class="icon" title="Уведомления" @click="toggleNotifications">
+          <i class="fas fa-bell"></i>
+          <span v-if="unreadNotifications > 0" class="notification-badge">
+            {{ unreadNotifications }}
+          </span>
+        </button>
+        <button class="icon" title="Чат" @click="openChat">
+          <i class="fas fa-comments"></i>
+        </button>
+        <div class="user-info">
+          <span>{{ userName }}</span>
+          <router-link to="/student/profile" class="user-avatar">
+            <i class="fas fa-user"></i>
+          </router-link>
+        </div>
+      </div>
+    </div>
+  </header>
+  
   <div class="main-content">
     <div class="panel">
       <h2 class="panel-title">Массовое редактирование документов</h2>
-
+      
       <!-- Шаг 1: Определение замены -->
       <div class="form-section">
         <h3 class="section-title">1. Определение замены</h3>
@@ -67,15 +67,13 @@
           </div>
         </div>
       </div>
-
+      
       <!-- Шаг 2: Выбор области действия -->
       <div class="form-section">
         <h3 class="section-title">2. Область поиска</h3>
-
         <div class="loading-indicator" v-if="departmentsLoading || disciplinesLoading || documentTypesLoading || eduProgramsLoading">
           Загрузка данных...
         </div>
-
         <div class="filters-grid" v-else>
           <!-- Фильтр по кафедрам -->
           <div class="filter-group">
@@ -84,7 +82,7 @@
               <label class="checkbox-label">
                 <input
                   type="checkbox"
-                  v-model="selectAllDepartments"
+                  :checked="selectAllDepartments"
                   @change="toggleAllDepartments"
                 >
                 <span>Выбрать все</span>
@@ -106,7 +104,7 @@
               </div>
             </div>
           </div>
-
+          
           <!-- Фильтр по дисциплинам -->
           <div class="filter-group">
             <label>Дисциплины:</label>
@@ -114,7 +112,7 @@
               <label class="checkbox-label">
                 <input
                   type="checkbox"
-                  v-model="selectAllDisciplines"
+                  :checked="selectAllDisciplines"
                   @change="toggleAllDisciplines"
                 >
                 <span>Выбрать все</span>
@@ -136,7 +134,7 @@
               </div>
             </div>
           </div>
-
+          
           <!-- Фильтр по типам документов -->
           <div class="filter-group">
             <label>Типы документов:</label>
@@ -144,7 +142,7 @@
               <label class="checkbox-label">
                 <input
                   type="checkbox"
-                  v-model="selectAllDocumentTypes"
+                  :checked="selectAllDocumentTypes"
                   @change="toggleAllDocumentTypes"
                 >
                 <span>Выбрать все</span>
@@ -166,11 +164,19 @@
               </div>
             </div>
           </div>
-
+          
           <!-- Фильтр по образовательным программам -->
           <div class="filter-group">
             <label>Образовательные программы:</label>
             <div class="filter-options">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  :checked="selectAllEduPrograms"
+                  @change="toggleAllEduPrograms"
+                >
+                <span>Выбрать все</span>
+              </label>
               <div class="scrollable-list">
                 <label
                   v-for="program in eduPrograms"
@@ -189,34 +195,24 @@
             </div>
           </div>
         </div>
-
         <div v-if="validationErrors.filters" class="error-message">
           {{ validationErrors.filters }}
         </div>
       </div>
-
+      
       <!-- Кнопки действий -->
       <div class="action-buttons">
-        <button
-          @click="previewChanges"
-          class="btn-primary"
-          :disabled="!searchText || isLoading"
-        >
+        <button @click="previewChanges"class="btn-primary":disabled="isLoading">
           {{ isLoading ? 'Загрузка...' : 'Предпросмотр изменений' }}
         </button>
-        <button
-          @click="resetForm"
-          class="btn-secondary"
-          :disabled="isLoading"
-        >
-          Сбросить
+        <button @click="resetForm"class="btn-secondary" :disabled="isLoading">
+          Сброс
         </button>
       </div>
-
+      
       <!-- Шаг 3: Предпросмотр -->
       <div v-if="previewData" class="preview-section">
         <h3 class="section-title">3. Предпросмотр изменений</h3>
-
         <div class="preview-stats">
           <div class="stat-card">
             <div class="stat-value">{{ previewData.statistics.totalDocuments }}</div>
@@ -231,7 +227,7 @@
             <div class="stat-label">Всего замен</div>
           </div>
         </div>
-
+        
         <!-- Поиск по документам -->
         <div class="document-search">
           <input
@@ -242,14 +238,14 @@
           >
           <div class="search-actions">
             <button
-              @click="sortBy = sortBy === 'name' ? '-name' : 'name'"
+              @click="toggleSort('name')"
               class="btn-icon"
               title="Сортировать по названию"
             >
               <i class="icon">📄</i>
             </button>
             <button
-              @click="sortBy = sortBy === 'matches' ? '-matches' : 'matches'"
+              @click="toggleSort('matches')"
               class="btn-icon"
               title="Сортировать по количеству замен"
             >
@@ -257,7 +253,7 @@
             </button>
           </div>
         </div>
-
+        
         <!-- Список документов -->
         <div class="document-list-container">
           <div v-if="filteredPreviewDocs.length === 0" class="empty-list-message">
@@ -293,7 +289,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- Кнопка запуска -->
         <div class="launch-section">
           <div class="confirmation-checkbox">
@@ -305,17 +301,16 @@
           <button
             @click="startJob"
             class="btn-success"
-            :disabled="!confirmed || isStartingJob"
+            :disabled="!confirmed || isStartingJob || previewData.statistics.documentsWithMatches === 0"
           >
             {{ isStartingJob ? 'Запуск...' : `Запустить редактирование (${previewData.statistics.documentsWithMatches} документов)` }}
           </button>
         </div>
       </div>
-
+      
       <!-- Шаг 4: Мониторинг выполнения -->
       <div v-if="activeJob" class="job-monitoring">
         <h3 class="section-title">4. Мониторинг выполнения</h3>
-
         <div class="job-info">
           <div class="job-header">
             <h4>Задание #{{ activeJob.jobId }}</h4>
@@ -323,7 +318,6 @@
               {{ getStatusText(activeJob.status) }}
             </span>
           </div>
-
           <div class="job-details">
             <div class="detail">
               <span class="label">Поиск:</span>
@@ -338,7 +332,7 @@
               <span class="value">{{ formatDate(activeJob.timestamps.created) }}</span>
             </div>
           </div>
-
+          
           <!-- Прогресс бар -->
           <div class="progress-section">
             <div class="progress-header">
@@ -357,7 +351,7 @@
               <span>Ошибок: {{ activeJob.statistics.failed }}</span>
             </div>
           </div>
-
+          
           <!-- Статистика -->
           <div class="job-statistics">
             <div class="stat-item">
@@ -377,7 +371,7 @@
               <div class="stat-label">Всего</div>
             </div>
           </div>
-
+          
           <!-- Логи -->
           <div class="job-logs">
             <h5>Логи выполнения</h5>
@@ -401,7 +395,7 @@
               </div>
             </div>
           </div>
-
+          
           <!-- Действия -->
           <div class="job-actions">
             <button
@@ -430,14 +424,9 @@
         </div>
       </div>
     </div>
-
+    
     <!-- Модальное окно просмотра документа -->
-    <DocumentViewerModal
-      v-if="selectedDoc"
-      :document="selectedDoc"
-      :search-text="searchText"
-      @close="closeViewer"
-    />
+    <DocumentViewerModal v-if="selectedDoc" :document="selectedDoc" :search-text="selectedDoc.searchText || searchText" @close="closeViewer"/>
   </div>
 </template>
 
@@ -449,7 +438,7 @@ import api from '../api';
 
 const toast = useToast();
 
-// --- Реактивные переменные ---
+// Данные формы
 const searchText = ref('');
 const replaceText = ref('');
 const filters = ref({
@@ -461,137 +450,97 @@ const filters = ref({
   disciplineByEduProgramIds: []
 });
 
-const validationErrors = ref({});
-const isLoading = ref(false);
-const isStartingJob = ref(false);
-const isRefreshing = ref(false);
-const isCancelling = ref(false);
-const confirmed = ref(false);
-
-// Данные из БД для фильтров
+// Данные для фильтров
 const departments = ref([]);
 const disciplines = ref([]);
 const documentTypes = ref([]);
 const eduPrograms = ref([]);
 
-// Состояния загрузки данных
-const departmentsLoading = ref(false);
-const disciplinesLoading = ref(false);
-const documentTypesLoading = ref(false);
-const eduProgramsLoading = ref(false);
-
-// Состояния выбора "все"
+// Состояние "Выбрать все"
 const selectAllDepartments = ref(false);
 const selectAllDisciplines = ref(false);
 const selectAllDocumentTypes = ref(false);
+const selectAllEduPrograms = ref(false);
 
 // Предпросмотр
 const previewData = ref(null);
-const searchQuery = ref('');
-const sortBy = ref('name');
+const isLoading = ref(false);
+const validationErrors = ref({});
 
-// Активное задание
+// Активная задача
 const activeJob = ref(null);
+const jobInterval = ref(null);
+
+// Модальное окно предпросмотра
+const showPreviewModal = ref(false);
 const selectedDoc = ref(null);
 
-// Таймер для обновления статуса
-let statusInterval = null;
-
-// --- Computed свойства ---
-const filteredPreviewDocs = computed(() => {
-  if (!previewData.value?.documents) return [];
-  
-  let docs = [...previewData.value.documents];
-  
-  // Фильтрация по поисковому запросу
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    docs = docs.filter(doc =>
-      doc.name.toLowerCase().includes(query) ||
-      doc.document_type.toLowerCase().includes(query)
-    );
-  }
-  
-  // Сортировка
-  if (sortBy.value) {
-    const [field, direction] = sortBy.value.startsWith('-')
-      ? [sortBy.value.slice(1), -1]
-      : [sortBy.value, 1];
-    
-    docs.sort((a, b) => {
-      if (field === 'matches') {
-        return (a.matches - b.matches) * direction;
-      } else if (field === 'name') {
-        return a.name.localeCompare(b.name) * direction;
-      }
-      return 0;
-    });
-  }
-  
-  return docs;
-});
-
-// --- Методы загрузки данных из БД ---
+// Загрузка данных фильтров
 const fetchDepartments = async () => {
-  departmentsLoading.value = true;
   try {
     const response = await api.get('/department');
     departments.value = response.data;
-    console.log('Кафедры загружены:', departments.value);
   } catch (error) {
-    console.error('Ошибка загрузки кафедр:', error);
-    toast.error('Не удалось загрузить кафедры');
-    departments.value = [];
-  } finally {
-    departmentsLoading.value = false;
+    console.error('Ошибка при загрузке кафедр:', error);
+    toast.error('Не удалось загрузить список кафедр');
   }
 };
+// Добавьте это к остальным ref
+const searchQuery = ref('');
+const userName = ref('Администратор'); // Или получайте из store
+const unreadNotifications = ref(0);
 
+// Вычисляемый список документов для предпросмотра с учетом поиска и сортировки
+const filteredPreviewDocs = computed(() => {
+  if (!previewData.value || !previewData.value.documents) return [];
+  
+  let docs = [...previewData.value.documents];
+  
+  // Поиск по названию
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    docs = docs.filter(d => d.name.toLowerCase().includes(q));
+  }
+  
+  // Сортировка (если реализована функция toggleSort)
+  return docs;
+});
+
+//функции для хедера
+const toggleSearch = () => {};
+const toggleNotifications = () => {};
+const openChat = () => {};
 const fetchDisciplines = async () => {
-  disciplinesLoading.value = true;
   try {
     const response = await api.get('/discipline');
     disciplines.value = response.data;
-    console.log('Дисциплины загружены:', disciplines.value);
   } catch (error) {
-    console.error('Ошибка загрузки дисциплин:', error);
-    toast.error('Не удалось загрузить дисциплины');
-    disciplines.value = [];
-  } finally {
-    disciplinesLoading.value = false;
+    console.error('Ошибка при загрузке дисциплин:', error);
+    toast.error('Не удалось загрузить список дисциплин');
   }
 };
 
 const fetchDocumentTypes = async () => {
-  documentTypesLoading.value = true;
   try {
     const response = await api.get('/documentType');
     documentTypes.value = response.data;
-    console.log('Типы документов загружены:', documentTypes.value);
   } catch (error) {
-    console.error('Ошибка загрузки типов документов:', error);
-    toast.error('Не удалось загрузить типы документов');
-    documentTypes.value = [];
-  } finally {
-    documentTypesLoading.value = false;
+    console.error('Ошибка при загрузке типов документов:', error);
+    toast.error('Не удалось загрузить список типов документов');
   }
 };
 
 const fetchEduPrograms = async () => {
-  eduProgramsLoading.value = true;
   try {
     const response = await api.get('/eduProgramm');
     eduPrograms.value = response.data;
-    console.log('Образовательные программы загружены:', eduPrograms.value);
   } catch (error) {
-    console.error('Ошибка загрузки образовательных программ:', error);
-    toast.error('Не удалось загрузить образовательные программы');
-    eduPrograms.value = [];
-  } finally {
-    eduProgramsLoading.value = false;
+    console.error('Ошибка при загрузке образовательных программ:', error);
+    toast.error('Не удалось загрузить список образовательных программ');
   }
 };
 
+// Загрузка всех данных фильтров
 const loadFilterData = async () => {
   try {
     await Promise.all([
@@ -600,6 +549,13 @@ const loadFilterData = async () => {
       fetchDocumentTypes(),
       fetchEduPrograms()
     ]);
+    
+    console.log('Данные фильтров загружены:');
+    console.log('- Кафедры:', departments.value.length);
+    console.log('- Дисциплины:', disciplines.value.length);
+    console.log('- Типы документов:', documentTypes.value.length);
+    console.log('- Образовательные программы:', eduPrograms.value.length);
+    
     toast.success('Данные фильтров загружены');
   } catch (error) {
     console.error('Ошибка при загрузке данных фильтров:', error);
@@ -607,268 +563,415 @@ const loadFilterData = async () => {
   }
 };
 
-// --- Методы управления галочками ---
+// Функции "Выбрать все"
 function toggleAllDepartments() {
-  if (selectAllDepartments.value) {
-    filters.value.departmentIds = departments.value.map(d => d.id);
-  } else {
-    filters.value.departmentIds = [];
+  console.log('toggleAllDepartments called');
+  
+  if (departments.value.length === 0) {
+    console.warn('Нет доступных кафедр');
+    return;
   }
+
+  if (filters.value.departmentIds.length === departments.value.length) {
+    // Если уже выбраны все - снимаем выбор
+    filters.value.departmentIds = [];
+    selectAllDepartments.value = false;
+  } else {
+    // Выбираем все кафедры
+    filters.value.departmentIds = departments.value.map(d => d.id);
+    selectAllDepartments.value = true;
+  }
+  
+  console.log('After toggle - departmentIds:', filters.value.departmentIds);
+  console.log('After toggle - selectAllDepartments:', selectAllDepartments.value);
 }
 
 function toggleAllDisciplines() {
-  if (selectAllDisciplines.value) {
-    filters.value.disciplineIds = disciplines.value.map(d => d.id);
-  } else {
+  console.log('toggleAllDisciplines called');
+  
+  if (disciplines.value.length === 0) {
+    console.warn('Нет доступных дисциплин');
+    return;
+  }
+
+  if (filters.value.disciplineIds.length === disciplines.value.length) {
     filters.value.disciplineIds = [];
+    selectAllDisciplines.value = false;
+  } else {
+    filters.value.disciplineIds = disciplines.value.map(d => d.id);
+    selectAllDisciplines.value = true;
   }
 }
 
 function toggleAllDocumentTypes() {
-  if (selectAllDocumentTypes.value) {
-    filters.value.documentTypeIds = documentTypes.value.map(t => t.id);
-  } else {
+  console.log('toggleAllDocumentTypes called');
+  
+  if (documentTypes.value.length === 0) {
+    console.warn('Нет доступных типов документов');
+    return;
+  }
+
+  if (filters.value.documentTypeIds.length === documentTypes.value.length) {
     filters.value.documentTypeIds = [];
-  }
-}
-
-// Методы для снятия/постановки отдельных галочек
-function toggleDepartment(deptId) {
-  const index = filters.value.departmentIds.indexOf(deptId);
-  if (index > -1) {
-    filters.value.departmentIds.splice(index, 1);
+    selectAllDocumentTypes.value = false;
   } else {
-    filters.value.departmentIds.push(deptId);
+    filters.value.documentTypeIds = documentTypes.value.map(d => d.id);
+    selectAllDocumentTypes.value = true;
   }
 }
 
-function toggleDiscipline(discId) {
-  const index = filters.value.disciplineIds.indexOf(discId);
-  if (index > -1) {
-    filters.value.disciplineIds.splice(index, 1);
+function toggleAllEduPrograms() {
+  console.log('toggleAllEduPrograms called');
+  
+  if (eduPrograms.value.length === 0) {
+    console.warn('Нет доступных образовательных программ');
+    return;
+  }
+
+  if (filters.value.eduProgramIds.length === eduPrograms.value.length) {
+    filters.value.eduProgramIds = [];
+    selectAllEduPrograms.value = false;
   } else {
-    filters.value.disciplineIds.push(discId);
+    filters.value.eduProgramIds = eduPrograms.value.map(d => d.id);
+    selectAllEduPrograms.value = true;
   }
 }
 
-function toggleDocumentType(typeId) {
-  const index = filters.value.documentTypeIds.indexOf(typeId);
-  if (index > -1) {
-    filters.value.documentTypeIds.splice(index, 1);
-  } else {
-    filters.value.documentTypeIds.push(typeId);
-  }
-}
-
-function toggleEduProgram(programId) {
-  const index = filters.value.eduProgramIds.indexOf(programId);
-  if (index > -1) {
-    filters.value.eduProgramIds.splice(index, 1);
-  } else {
-    filters.value.eduProgramIds.push(programId);
-  }
-}
-
-// --- Валидация ---
+// Валидация формы
 function validateForm() {
   const errors = {};
-  
+
   if (!searchText.value.trim()) {
     errors.searchText = 'Введите текст для поиска';
   }
-  
-  // Проверяем все поля фильтров согласно валидации на бэкенде
-  const hasFilters = 
+
+  // Проверяем, что хотя бы один фильтр выбран
+  const hasSelectedFilters = 
     filters.value.departmentIds.length > 0 ||
     filters.value.disciplineIds.length > 0 ||
-    filters.value.eduProgramIds.length > 0 ||
     filters.value.documentTypeIds.length > 0 ||
+    filters.value.eduProgramIds.length > 0 ||
     filters.value.eduProgramByDepartmentIds.length > 0 ||
     filters.value.disciplineByEduProgramIds.length > 0;
-  
-  if (!hasFilters) {
-    errors.filters = 'Выберите хотя бы один фильтр';
+
+  if (!hasSelectedFilters) {
+    errors.filters = 'Выберите хотя бы один фильтр (кафедру, дисциплину, тип документа или образовательную программу)';
   }
-  
+
   validationErrors.value = errors;
   return Object.keys(errors).length === 0;
 }
 
-// --- Предпросмотр ---
+// Предпросмотр изменений
 async function previewChanges() {
+  console.log('=== previewChanges called ===');
+  console.log('searchText:', searchText.value);
+  console.log('replaceText:', replaceText.value);
+  console.log('filters:', JSON.stringify(filters.value, null, 2));
+  
+  // Проверка валидации
   if (!validateForm()) {
     console.warn('Валидация фронтенда не пройдена:', validationErrors.value);
+    toast.error('Пожалуйста, заполните все обязательные поля');
     return;
   }
+  
+  console.log('Валидация фронтенда пройдена успешно');
+  
   isLoading.value = true;
-   const payload = {
-    searchText: searchText.value,
+
+  const payload = {
+    searchText: searchText.value.trim(),
+    replaceText: replaceText.value.trim(),
     filters: filters.value
   };
-  
-  console.log('>>> [FRONTEND] Отправка запроса на предпросмотр:', payload);
+
+  console.log('>>> [FRONTEND] Отправка запроса на предпросмотр:', JSON.stringify(payload, null, 2));
 
   try {
     const response = await api.post('/document-jobs/preview', payload);
     console.log('<<< [FRONTEND] Ответ сервера получен:', response.data);
     
-    previewData.value = response.data || response; 
-    toast.success(`Найдено ${previewData.value.statistics.totalDocuments} документов`);
+    if (response.data) {
+      previewData.value = response.data;
+      toast.success(`Найдено ${previewData.value.statistics?.totalDocuments || 0} документов`);
+    } else {
+      console.error('Ответ сервера пустой или не содержит данных');
+      toast.error('Сервер вернул пустой ответ');
+    }
   } catch (error) {
     console.error('!!! [FRONTEND] Ошибка при предпросмотре:');
+    
     if (error.response) {
       console.error('Статус:', error.response.status);
       console.error('Данные ошибки:', error.response.data);
-      toast.error(`Ошибка ${error.response.status}: ${error.response.data.error || 'Серверная ошибка'}`);
+      
+      if (error.response.status === 400) {
+        // Ошибка валидации
+        if (error.response.data.details) {
+          const errorMessages = error.response.data.details.map(d => d.message).join(', ');
+          toast.error(`Ошибка валидации: ${errorMessages}`);
+        } else {
+          toast.error(`Ошибка валидации: ${error.response.data.error || 'Неизвестная ошибка'}`);
+        }
+      } else if (error.response.status === 403) {
+        toast.error('Доступ запрещен. У вас недостаточно прав.');
+      } else if (error.response.status === 500) {
+        toast.error('Внутренняя ошибка сервера');
+      } else {
+        toast.error(`Ошибка ${error.response.status}: ${error.response.data.error || 'Серверная ошибка'}`);
+      }
+    } else if (error.request) {
+      console.error('Запрос был отправлен, но ответ не получен:', error.request);
+      toast.error('Сервер не отвечает. Проверьте подключение к сети.');
     } else {
-      console.error('Сообщение:', error.message);
-      toast.error('Сетевая ошибка или сервер не отвечает');
+      console.error('Ошибка при настройке запроса:', error.message);
+      toast.error('Ошибка при отправке запроса');
     }
   } finally {
     isLoading.value = false;
   }
 }
 
-// --- Запуск задания ---
+// Запуск задачи
 async function startJob() {
-  if (!confirmed.value) {
-    toast.warning('Подтвердите выполнение операции');
+  if (!previewData.value) {
+    toast.error('Сначала выполните предпросмотр');
     return;
   }
-
-  isStartingJob.value = true;
+  
+  const payload = {
+    searchText: searchText.value.trim(),
+    replaceText: replaceText.value.trim(),
+    filters: filters.value
+  };
+  
   try {
-    const response = await api.post('/document-jobs', {
-      searchText: searchText.value,
-      replaceText: replaceText.value,
-      filters: filters.value
-    });
-
-    console.log('Response from job creation:', response);////проверка
+    console.log('>>> [FRONTEND] Запуск задачи редактирования:', JSON.stringify(payload, null, 2));
     
-    const jobId = response.data?.jobId || response.jobId;
+    const response = await api.post('/document-jobs/', payload);
+    console.log('<<< [FRONTEND] Ответ сервера на запуск задачи:', response.data);
     
-    if (!jobId) {
-      toast.error('Не удалось получить ID задания');
-      return;
+    // Преобразуем ответ сервера в нужную структуру
+    activeJob.value = {
+      jobId: response.data.id || response.data.jobId,
+      status: response.data.status || 'pending',
+      searchText: searchText.value.trim(),
+      replaceText: replaceText.value.trim(),
+      timestamps: {
+        created: response.data.created_at || new Date().toISOString(),
+        started: response.data.started_at,
+        completed: response.data.completed_at
+      },
+      progress: {
+        percentage: 0,
+        processed: response.data.processed_count || 0,
+        total: previewData.value.statistics.totalDocuments || 0
+      },
+      statistics: {
+        success: response.data.success_count || 0,
+        failed: response.data.failed_count || 0,
+        skipped: response.data.skipped_count || 0,
+        total: previewData.value.statistics.totalDocuments || 0
+      },
+      logs: []
+    };
+    
+    // Пересчитываем процент выполнения
+    if (activeJob.value.progress.total > 0) {
+      activeJob.value.progress.percentage = Math.round(
+        (activeJob.value.progress.processed / activeJob.value.progress.total) * 100
+      );
     }
-
-    toast.success('Задание успешно создано');
-    await loadJobStatus(jobId);
-    localStorage.setItem('lastJobId', jobId);
-    previewData.value = null;
-    confirmed.value = false;
+    
+    console.log('Сформированный activeJob:', activeJob.value);
+    toast.success('Задача запущена');
+    
+    // Запускаем мониторинг
+    startJobMonitoring();
+    
   } catch (error) {
-    console.error('Ошибка при создании задания:', error);
-    if (error.response?.data?.error) {
-      toast.error(error.response.data.error);
+    console.error('!!! [FRONTEND] Ошибка при запуске задачи:', error);
+    if (error.response) {
+      console.error('Статус:', error.response.status);
+      console.error('Данные ошибки:', error.response.data);
+      toast.error(`Ошибка ${error.response.status}: ${error.response.data.error || 'Не удалось запустить задачу'}`);
     } else {
-      toast.error('Ошибка при создании задания');
+      toast.error('Не удалось запустить задачу');
     }
-  } finally {
-    isStartingJob.value = false;
   }
 }
 
-
-// --- Управление документом ---
-async function loadJobStatus(jobId) {
-  isRefreshing.value = true;
-  try {
-    
-    if (!jobId || jobId === 'undefined') {
-      console.error('Invalid jobId:', jobId);
-      toast.error('Неверный ID задания');
-      return;
-    }
-    
-    const response = await api.get(`/document-jobs/${jobId}`);
-    activeJob.value = response;
-
-    if (response.status === 'pending' || response.status === 'in_progress') {
-      startStatusPolling(jobId);
-    } else {
-      stopStatusPolling();
-    }
-  } catch (error) {
-    console.error('Ошибка при загрузке статуса задания:', error);
-    toast.error('Не удалось загрузить статус задания');
-  } finally {
-    isRefreshing.value = false;
+// Мониторинг задачи
+function startJobMonitoring() {
+  console.log('🚀 Запуск мониторинга задачи');
+  
+  if (jobInterval.value) {
+    clearInterval(jobInterval.value);
   }
+  
+  // Первая проверка сразу
+  refreshJobStatus();
+  
+  jobInterval.value = setInterval(async () => {
+    await refreshJobStatus();
+  }, 3000); // Проверяем каждые 3 секунды
 }
 
-
-function startStatusPolling(jobId) {
-  stopStatusPolling();
-  statusInterval = setInterval(async () => {
-    try {
-      const response = await api.get(`/document-jobs/${jobId}`);
-      activeJob.value = response;
-      
-      if (response.status === 'completed' || response.status === 'failed' || response.status === 'cancelled') {
-        stopStatusPolling();
-        if (response.status === 'completed') {
-          toast.success('Задание успешно выполнено');
-        } else if (response.status === 'failed') {
-          toast.error('Задание завершено с ошибкой');
-        }
-      }
-    } catch (error) {
-      console.error('Ошибка при обновлении статуса:', error);
-    }
-  }, 5000);
-}
-
-function stopStatusPolling() {
-  if (statusInterval) {
-    clearInterval(statusInterval);
-    statusInterval = null;
-  }
-}
-
+// Обновление статуса задачи
 async function refreshJobStatus() {
-  if (activeJob.value) {
-    await loadJobStatus(activeJob.value.jobId);
+  if (!activeJob.value) {
+    console.warn('Нет активной задачи для обновления');
+    return;
+  }
+  
+  const currentId = activeJob.value.jobId;
+  if (!currentId) {
+    console.error('ID задания не определен');
+    return;
+  }
+  
+  console.log(`🔄 Обновление статуса задачи ${currentId}`);
+  
+  try {
+    const response = await api.get(`/document-jobs/${currentId}`);
+    console.log('📊 Получены данные задачи:', response.data);
+    
+    // Обновляем данные задачи
+    const jobData = response.data;
+    
+    activeJob.value.status = jobData.status || activeJob.value.status;
+    activeJob.value.timestamps.started = jobData.started_at;
+    activeJob.value.timestamps.completed = jobData.completed_at;
+    
+    // Обновляем прогресс
+    activeJob.value.progress.processed = jobData.processed_count || 0;
+    activeJob.value.progress.total = jobData.total_count || activeJob.value.progress.total;
+    
+    if (activeJob.value.progress.total > 0) {
+      activeJob.value.progress.percentage = Math.round(
+        (activeJob.value.progress.processed / activeJob.value.progress.total) * 100
+      );
+    }
+    
+    // Обновляем статистику
+    activeJob.value.statistics.success = jobData.success_count || 0;
+    activeJob.value.statistics.failed = jobData.failed_count || 0;
+    activeJob.value.statistics.skipped = jobData.skipped_count || 0;
+    
+    // Загружаем логи, если они есть
+    if (jobData.logs) {
+      activeJob.value.logs = jobData.logs;
+    } else {
+      // Если логи не пришли с основным ответом, загружаем отдельно
+      try {
+        const logsResponse = await api.get(`/document-jobs/${currentId}/logs`);
+        activeJob.value.logs = logsResponse.data || [];
+      } catch (logsError) {
+        console.warn('Не удалось загрузить логи:', logsError);
+      }
+    }
+    
+    // Если задача завершена
+    if (activeJob.value.status === 'completed' || activeJob.value.status === 'failed') {
+      console.log(`✅ Задача ${currentId} завершена со статусом: ${activeJob.value.status}`);
+      clearInterval(jobInterval.value);
+      jobInterval.value = null;
+      
+      if (activeJob.value.status === 'completed') {
+        toast.success(`Задача успешно завершена! Обработано ${activeJob.value.statistics.success} документов`);
+      } else {
+        toast.error(`Задача завершилась с ошибкой. Ошибок: ${activeJob.value.statistics.failed}`);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Ошибка при обновлении статуса задачи:', error);
+    if (error.response) {
+      console.error('Статус:', error.response.status);
+      console.error('Данные ошибки:', error.response.data);
+      
+      // Если задача не найдена, возможно она была удалена
+      if (error.response.status === 404) {
+        console.warn('Задача не найдена на сервере');
+        clearInterval(jobInterval.value);
+        jobInterval.value = null;
+        toast.warning('Задача не найдена на сервере');
+      }
+    }
   }
 }
 
-async function cancelJob() {
-  if (!activeJob.value || !canCancelJob(activeJob.value)) return;
-  
-  if (!confirm('Вы уверены, что хотите отменить это задание?')) return;
-  
-  isCancelling.value = true;
-  try {
-    await api.post(`/document-jobs/${activeJob.value.jobId}/cancel`);
-    toast.success('Задание отменено');
-    await loadJobStatus(activeJob.value.jobId);
-  } catch (error) {
-    console.error('Ошибка при отмене задания:', error);
-    toast.error('Не удалось отменить задание');
-  } finally {
-    isCancelling.value = false;
-  }
+// Вспомогательные функции для отображения
+function getStatusText(status) {
+  const statusMap = {
+    'pending': 'Ожидание',
+    'in_progress': 'В процессе',
+    'completed': 'Завершено',
+    'failed': 'Ошибка',
+    'cancelled': 'Отменено'
+  };
+  return statusMap[status] || status;
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  return date.toLocaleString('ru-RU');
+}
+
+function formatTime(dateString) {
+  if (!dateString) return '—';
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('ru-RU');
 }
 
 function canCancelJob(job) {
   return job.status === 'pending' || job.status === 'in_progress';
 }
 
-function downloadReport() {
-  toast.info('Функция скачивания отчета в разработке');
+// Отмена задачи
+async function cancelJob() {
+  if (!activeJob.value) return;
+  
+  try {
+    const response = await api.delete(`/document-jobs/${activeJob.value.jobId}`);
+    toast.success('Задача отменена');
+    activeJob.value.status = 'cancelled';
+    clearInterval(jobInterval.value);
+    jobInterval.value = null;
+  } catch (error) {
+    console.error('Ошибка при отмене задачи:', error);
+    toast.error('Не удалось отменить задачу');
+  }
 }
 
-// --- Просмотр документов ---
-function viewDocument(doc) {
-  selectedDoc.value = doc;
+// Скачивание отчета
+async function downloadReport() {
+  if (!activeJob.value) return;
+  
+  try {
+    const response = await api.get(`/document-jobs/${activeJob.value.jobId}/report`, {
+      responseType: 'blob'
+    });
+    
+    // Создаем ссылку для скачивания
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `report-job-${activeJob.value.jobId}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    toast.success('Отчет скачан');
+  } catch (error) {
+    console.error('Ошибка при скачивании отчета:', error);
+    toast.error('Не удалось скачать отчет');
+  }
 }
 
-function closeViewer() {
-  selectedDoc.value = null;
-}
-
-// --- Сброс формы ---
+// Сброс формы
 function resetForm() {
   searchText.value = '';
   replaceText.value = '';
@@ -882,73 +985,77 @@ function resetForm() {
   };
   previewData.value = null;
   validationErrors.value = {};
-  confirmed.value = false;
+  
+  // Сброс состояния "Выбрать все"
   selectAllDepartments.value = false;
   selectAllDisciplines.value = false;
   selectAllDocumentTypes.value = false;
-}
-
-// --- Вспомогательные функции ---
-function getStatusText(status) {
-  const statusMap = {
-    'pending': 'Ожидание',
-    'in_progress': 'В процессе',
-    'completed': 'Завершено',
-    'failed': 'Ошибка',
-    'cancelled': 'Отменено',
-    'success': 'Успешно',
-    'skipped': 'Пропущено'
-  };
-  return statusMap[status] || status;
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleString('ru-RU');
-}
-
-function formatTime(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('ru-RU');
-}
-
-// --- Хуки жизненного цикла ---
-onMounted(async () => {
-  await loadFilterData();
-
-  const savedJobId = localStorage.getItem('lastJobId');
+  selectAllEduPrograms.value = false;
   
-  // ДОБАВЬТЕ ВАЛИДАЦИЮ
-  if (savedJobId && savedJobId !== 'undefined' && savedJobId !== 'null') {
-    console.log('Loading saved job:', savedJobId);
-    await loadJobStatus(savedJobId);
-  } else {
-    console.log('No valid saved job found');
-    localStorage.removeItem('lastJobId'); // Очистите невалидное значение
-  }
-});
+  toast.info('Форма сброшена');
+}
 
-onUnmounted(() => {
-  if (statusInterval) {
-    clearInterval(statusInterval);
+// Тестовый предпросмотр
+async function testPreview() {
+  // Временные тестовые данные
+  searchText.value = 'тест';
+  replaceText.value = 'замена';
+  
+  // Выбираем первую доступную кафедру
+  if (departments.value.length > 0) {
+    filters.value.departmentIds = [departments.value[0].id];
   }
-});
+  
+  console.log('Тестовые данные установлены');
+  await previewChanges();
+}
 
-// --- Наблюдатели ---
+// Watch для обновления состояния "Выбрать все"
 watch(() => filters.value.departmentIds, (newVal) => {
-  selectAllDepartments.value = newVal.length === departments.value.length;
-});
+  console.log('watch departmentIds:', newVal);
+  selectAllDepartments.value = newVal.length === departments.value.length && departments.value.length > 0;
+}, { deep: true });
 
 watch(() => filters.value.disciplineIds, (newVal) => {
-  selectAllDisciplines.value = newVal.length === disciplines.value.length;
-});
+  console.log('watch disciplineIds:', newVal);
+  selectAllDisciplines.value = newVal.length === disciplines.value.length && disciplines.value.length > 0;
+}, { deep: true });
 
 watch(() => filters.value.documentTypeIds, (newVal) => {
-  selectAllDocumentTypes.value = newVal.length === documentTypes.value.length;
+  console.log('watch documentTypeIds:', newVal);
+  selectAllDocumentTypes.value = newVal.length === documentTypes.value.length && documentTypes.value.length > 0;
+}, { deep: true });
+
+watch(() => filters.value.eduProgramIds, (newVal) => {
+  console.log('watch eduProgramIds:', newVal);
+  selectAllEduPrograms.value = newVal.length === eduPrograms.value.length && eduPrograms.value.length > 0;
+}, { deep: true });
+
+// // Открытие модального окна предпросмотра
+function viewDocument(doc) {
+ console.log('=== viewDocument called ===');
+  console.log('Document:', doc);
+  console.log('searchText value:', searchText.value);
+  console.log('selectedDoc before:', selectedDoc.value);
+  
+  selectedDoc.value = doc;
+  
+  console.log('selectedDoc after:', selectedDoc.value);
+  console.log('=== end viewDocument ===');
+}
+
+// Загрузка данных при монтировании
+onMounted(() => {
+  loadFilterData();
 });
+
+// // Закрытие модального окна
+function closeViewer() {
+  selectedDoc.value = null;
+}
 </script>
+
+
 
 <style scoped>
 /* Стили компонента */
@@ -1083,7 +1190,12 @@ textarea.error {
   margin-top: 24px;
 }
 
-.btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-small, .btn-icon {
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-small,
+.btn-icon {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -1421,5 +1533,135 @@ textarea.error {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-</style> 
+.btn-primary:disabled,
+.btn-success:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.scrollable-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.document-item {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.document-item:hover {
+  background-color: #f5f5f5;
+}
+
+.document-item.selected {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-container {
+  background: white;
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.preview-content {
+  background: #f9f9f9;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  font-family: monospace;
+}
+
+.original-content {
+  background: #fff;
+  border: 1px dashed #ccc;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+  text-align: right;
+}
+
+/* Подсветка найденного текста */
+:deep(.highlight) {
+  background-color: yellow;
+  font-weight: bold;
+  color: black;
+}
+</style>

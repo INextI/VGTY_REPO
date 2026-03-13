@@ -4,7 +4,7 @@ const disciplineController = require('../controllers/disciplineController');
 const upload = require('../config/multer')
 const authMiddleware = require('../middleware/authMiddleware')
 
-const validate = require('../middleware/validationMiddleware')
+const validate = require('../middleware/validationMiddlewaree')
 const {
     createDisciplineSchema,
     updateDisciplineSchema
@@ -14,8 +14,9 @@ const {idParamSchema} = require('../validators/common/idParamSchema')
 const paginationSchema = require('../validators/common/pagination')
 
 router.post("/", upload.single("image"), validate(createDisciplineSchema), disciplineController.create);
+router.get("/", disciplineController.getAll);
 router.get('/my', authMiddleware, validate(paginationSchema, "query"), disciplineController.getMyDisciplines)
-router.get("/", disciplineController.getAllWithImage);
+
 router.get("/light", disciplineController.getAllWithoutImage);
 
 router.get("/:id", validate(idParamSchema, 'params'), disciplineController.getByIdWithImage);
