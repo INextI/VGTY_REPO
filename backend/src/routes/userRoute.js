@@ -1,12 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-// Создание полного пользователя
-router.post('/full', userController.createFull);
-// Получение списка пользователей
-router.get('/', userController.getAll);
-// Получение пользователя по ID
-router.get('/:id', userController.getOne);
+const { authMiddleware, checkRole } = require('../middleware/authMiddleware');
+
+const validate = require('../middleware/validationMiddlewaree')
+const {
+    createUserSchema,
+    updateUserSchema,
+    createFullUserSchema
+} = require('../validators/userValidator')
+
+const {idParamSchema} = require('../validators/common/idParamSchema')
+
+router.post('/', validate(createUserSchema), userController.create)
+router.get('/', userController.getAll)
+
+router.post('/full', validate(createFullUserSchema),userController.createFull);
+
+/**
+ * @route GET /api/user/{id}
+ * @param {string} id.path.required - ID пользователя
+ * @returns {object} 200 - Пользователь
+ * @returns {404}  - Пользователь не найден
+ */
+router.get('/:id', validate(idParamSchema, 'params'), userController.getOne)
+router.put(
+    '/:id',
+    validate(idParamSchema, 'params'),
+    validate(updateUserSchema),
+    userController.update)
+
+router.delete('/:id', validate(idParamSchema, 'params'), userController.delete)
+
+
+
+
 module.exports = router;
-
-
