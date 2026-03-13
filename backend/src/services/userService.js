@@ -133,7 +133,7 @@ class UserService {
         }
 
         if (role === "employee") {
-            return employeeService.getEmployeeDisciplines(userId, pagination);
+            return employeeService.getEmployeeDiscipline(userId, pagination);
         }
 
         if (role === "admin") {

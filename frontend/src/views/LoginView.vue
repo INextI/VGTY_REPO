@@ -87,7 +87,7 @@ const handleLogin = async () => {
       router.push('/admin');
     } else if (user.role === 'student') {
       router.push('/student/home');
-    } else if (user.role === 'teacher') {
+    } else if (user.role === 'employee') {
       router.push('/teacher/home');
     } else {
       router.push('/');

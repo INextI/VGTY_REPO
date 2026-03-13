@@ -190,6 +190,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
+import { getMyDisciplines } from '@/api/courseApi'
 
 // Реактивные состояния
 const searchQuery = ref('');
@@ -199,6 +200,7 @@ const unreadNotifications = ref(5);
 const currentDate = ref(new Date());
 const selectedDate = ref(new Date());
 const globalSearchResults = ref([]);
+const loadingCourses = ref(false)
 
 // Дни недели для календаря
 const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -212,44 +214,7 @@ const events = ref([
 ]);
 
 // Курсы (в реальном приложении будут из API)
-const allCourses = ref([
-  { 
-    id: 1, 
-    title: 'Введение в программирование', 
-    description: 'Основы программирования на Python для начинающих студентов',
-    image: 'https://cchgeu.ru/upload/resize_cache/iblock/19c/5nzxpiukzw6wx11r2fira17rti9prvev/1200_1200_1/Fv2ykckoWd4.jpg',
-    studentsCount: 45,
-    tasksCount: 8,
-    lastVisited: '2024-06-08'
-  },
-  { 
-    id: 2, 
-    title: 'Математический анализ', 
-    description: 'Пределы, производные, интегралы и их приложения в технических науках',
-    image: 'https://cchgeu.ru/upload/resize_cache/iblock/19c/5nzxpiukzw6wx11r2fira17rti9prvev/1200_1200_1/Fv2ykckoWd4.jpg',
-    studentsCount: 38,
-    tasksCount: 12,
-    lastVisited: '2024-06-05'
-  },
-  { 
-    id: 3, 
-    title: 'Базы данных', 
-    description: 'Проектирование и реализация реляционных баз данных, SQL запросы',
-    image: 'https://cchgeu.ru/upload/resize_cache/iblock/19c/5nzxpiukzw6wx11r2fira17rti9prvev/1200_1200_1/Fv2ykckoWd4.jpg',
-    studentsCount: 32,
-    tasksCount: 6,
-    lastVisited: '2024-06-10'
-  },
-  { 
-    id: 4, 
-    title: 'Веб-разработка', 
-    description: 'Создание современных веб-приложений с использованием HTML, CSS и JavaScript',
-    image: 'https://cchgeu.ru/upload/resize_cache/iblock/19c/5nzxpiukzw6wx11r2fira17rti9prvev/1200_1200_1/Fv2ykckoWd4.jpg',
-    studentsCount: 28,
-    tasksCount: 10,
-    lastVisited: '2024-06-03'
-  }
-]);
+const allCourses = ref([]);
 
 // Получаем информацию о пользователе
 const authStore = useAuthStore();
@@ -352,6 +317,45 @@ const eventsForSelectedDate = computed(() => {
 });
 
 // Методы
+const loadCourses = async () => {
+  try {
+
+    loadingCourses.value = true
+
+    const response = await getMyDisciplines({
+      page: 1,
+      limit: 50
+    })
+
+    console.log("API RESPONSE", response.data)
+
+    const disciplines = response.data.data
+
+    const mappedCourses = disciplines.map(d => ({
+      id: d.id,
+      title: d.name,
+      description: d.description,
+      image: d.image_url
+        ? `${import.meta.env.VITE_API_URL}${d.image_url}`
+        : 'https://via.placeholder.com/300x120',
+      studentsCount: 0,
+      tasksCount: 0,
+      lastVisited: new Date()
+    }))
+
+    allCourses.value = mappedCourses
+
+  } catch (error) {
+
+    console.error('Ошибка загрузки курсов', error)
+
+  } finally {
+
+    loadingCourses.value = false
+
+  }
+}
+
 const toggleSearch = () => {
   showSearchModal.value = true;
 };
@@ -421,10 +425,24 @@ const isSameDay = (date1, date2) => {
          date1.getMonth() === date2.getMonth() &&
          date1.getFullYear() === date2.getFullYear();
 };
-
+/*
+const updateCurrentTime = () => {
+  const now = new Date();
+  currentTime.value = now.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+*/
 // При загрузке компонента
-onMounted(() => {
+let timeInterval;
+onMounted(async () => {
   console.log('HomeTeacherView загружен');
+  /*
+  updateCurrentTime()
+  timeInterval = setInterval(updateCurrentTime, 60000)
+  */
+  await loadCourses()
 });
 </script>
 

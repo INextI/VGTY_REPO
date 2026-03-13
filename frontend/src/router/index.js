@@ -54,12 +54,12 @@ const routes = [
     meta: { requiresAuth: true, role: 'student' } 
   },
   { 
-    path: '/teacher/courses', 
+    path: '/teacher/course/:id', 
     component: () => import('@/views/CourseTeacherView.vue'),
     meta: { requiresAuth: true, role: 'teacher' } 
   },
   { 
-    path: '/student/courses', 
+    path: '/student/courses/:id', 
     component: () => import('@/views/CourseStudentView.vue'),
     meta: { requiresAuth: true, role: 'student' } 
   },

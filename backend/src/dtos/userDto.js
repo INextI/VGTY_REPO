@@ -3,6 +3,7 @@ module.exports = class UserDto {
     login;
     role;
 
+
     constructor(model) {
         this.id = model.id;
         this.login = model.login;
@@ -13,5 +14,6 @@ module.exports = class UserDto {
         } else {
             this.role = model.role || null;
         }
+        this
     }
 }
