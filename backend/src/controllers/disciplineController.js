@@ -125,6 +125,28 @@ class DisciplineController {
         }
 
     }
+
+    async getFull(req, res) {
+
+        try {
+
+            const course = await service.getFullCourse(
+                req.params.id,
+                req.user
+            )
+
+            res.json(course)
+
+        } catch (e) {
+
+            res.status(500).json({
+                message: e.message
+            })
+
+        }
+
+    }
+
 }
 
 module.exports = new DisciplineController();
