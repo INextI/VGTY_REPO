@@ -19,6 +19,11 @@ const DocumentType = require('./documentTypes')
 const DocumentEditJob = require('./documentEditJobs')
 const DocumentEditJobLog = require('./documentEditJobLogs')
 const DocumentAttachment = require('./documentAttachments')
+const Assignment = require('./assignmentModel')
+const AssignmentMaterials = require('./assignmentMaterials')
+const AssignmentSubmission = require('./assignmentSubmission')
+const AssignmentFiles = require('./assignmentFiles')
+const CourseGrade = require('./CourseGrade')
 //таблы для связи
 const GroupDiscipline = require('./groupDisciplineModel');
 const DisciplineEmployee = require('./disciplineEmployeeModel')
@@ -92,6 +97,25 @@ Token.belongsTo(User, { foreignKey: 'user_id'})
 // Связь "Один-ко-Многим": Employee -> Discipline
 Discipline.belongsTo(Employee, {foreignKey: 'owner_employee_id', as: 'owner'})
 Employee.hasMany(Discipline, {foreignKey: 'owner_employee_id', as: 'owned_disciplines'})
+
+
+Discipline.hasMany(Assignment, { foreignKey: 'discipline_id', onDelete: "CASCADE" })
+Assignment.belongsTo(Discipline, { foreignKey: 'discipline_id' })
+
+Employee.hasMany(Assignment, { foreignKey: 'author_employee_id' })
+Assignment.belongsTo(Employee, { foreignKey: 'author_employee_id', as: 'author' })
+
+Assignment.hasMany(AssignmentSubmission, {foreignKey: 'assignment_id'})
+AssignmentSubmission.belongsTo(Assignment, {foreignKey: 'assignment_id'})
+
+Student.hasMany(AssignmentSubmission, {foreignKey: 'student_id'})
+AssignmentSubmission.belongsTo(Student, {foreignKey: 'student_id'})
+
+Discipline.hasMany(CourseGrade, {foreignKey: 'discipline_id'})
+CourseGrade.belongsTo(Discipline, {foreignKey: 'discipline_id'})
+
+Student.hasMany(CourseGrade, {foreignKey: 'student_id'})
+CourseGrade.belongsTo(Student, {foreignKey: 'student_id'})
 
 // === Связь "Многие-ко-Многим": Group <-> Discipline ===
 Group.belongsToMany(Discipline, {
@@ -297,5 +321,10 @@ module.exports = {
     CompletedSession,
     ContactData,
     EmployeeGrades , 
-    Positions
+    Positions,
+    Assignment,
+    AssignmentMaterials,
+    AssignmentSubmission,
+    AssignmentFiles,
+    CourseGrade,
 };
