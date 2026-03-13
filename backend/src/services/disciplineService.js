@@ -158,6 +158,64 @@ class DisciplineService {
             }
         }
     }
+
+    async getFullCourse(discipline_id, user) {
+
+        const includeAssignments = {
+            model: Assignment,
+            include: [
+                {
+                    model: AssignmentMaterials
+                },
+                {
+                    model: AssignmentFiles
+                }
+            ]
+        }
+
+        // если студент → показываем только его submission
+        if (user.role === "student") {
+
+            includeAssignments.include.push({
+                model: AssignmentSubmission,
+                where: {
+                    student_id: user.student_id
+                },
+                required: false
+            })
+
+        }
+
+        // если преподаватель → показываем все submission
+        if (user.role === "teacher") {
+
+            includeAssignments.include.push({
+                model: AssignmentSubmission,
+                include: [
+                    {
+                        model: Student,
+                        attributes: ["id", "first_name", "last_name"]
+                    }
+                ]
+            })
+
+        }
+
+        const course = await Discipline.findByPk(discipline_id, {
+
+            include: [
+                includeAssignments
+            ]
+
+        })
+
+        if (!course) {
+            throw new Error("Course not found")
+        }
+
+        return course
+    }
+
 }
 
 module.exports = new DisciplineService();
