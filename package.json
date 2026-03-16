@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "joi": "^18.0.2",
-    "jszip": "^3.10.1",
-    "mammoth": "^1.11.0",
-    "vue-toastification": "^2.0.0-rc.5"
-  }
-}
