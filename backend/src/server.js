@@ -25,9 +25,11 @@ const start = async () => {
     });
   } catch (e) {
     console.log(e)
+    console.error('❌ Server startup failed:', e);
+    process.exit(1); // чтобы Docker понял, что была ошибка
   }
 }
-
+/*
 // После инициализации базы данных
 documentJobProcessor.start();
 
@@ -36,5 +38,5 @@ process.on('SIGINT', () => {
   documentJobProcessor.stop();
   process.exit(0);
 });
-
+*/
 start()

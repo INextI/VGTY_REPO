@@ -32,8 +32,12 @@ services:
     build: ./backend
     container_name: ultramar_backend
     restart: always
-    env_file:
-      - ./backend/.env
+    environment:
+      DB_HOST: ultramar_postgres  # вместо localhost
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: Ultramar
     ports:
       - "3000:3000"
     depends_on:

@@ -24,6 +24,7 @@ const groupRouter = require('./groupRoute')
 const assignmentRouter = require('./assignmentRoute')
 const assignmentMaterialsRoute = require('./assignmentMaterialsRoute')
 const assignmentFilesRoute = require('./assignmentFilesRoute')
+const healthRoute = require('./healthRroute.js')
 
 
 const sessionRoutes = require('./sessionRoutes');
@@ -67,6 +68,7 @@ router.use('/documentEditJobLog', documentEditJobLogRoutes)
 router.use('/documentEditJob', documentEditJobRoutes)
 router.use('/documentType', documentTypeRoutes)
 router.use('/document-jobs', documentJobsRoutes)
+router.use('/health', healthRoute)
 
 router.post('/documentAttachment', upload.single('doc'), documentAttachmentController.create);
 // Только для админов
